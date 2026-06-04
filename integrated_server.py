@@ -1,4 +1,4 @@
-import os, sys, webbrowser, threading, random, string, re, time, json
+﻿import os, sys, webbrowser, threading, random, string, re, time, json
 from pathlib import Path
 
 # Fix Windows GBK encoding crash on emoji characters
@@ -61,32 +61,32 @@ from models import Account, Group
 
 Base.metadata.create_all(bind=engine)
 
-# --------------- Ninjemail credential adapters ---------------
+# --------------- 邮箱注册 credential adapters ---------------
 try:
-    from ninjemail.outlook_token_export import (
-        BUILTIN_CLIENT_ID as NINJEMAIL_BUILTIN_CLIENT_ID,
-        credential_file_for as ninjemail_credential_file_for,
-        locate_credential_file as ninjemail_locate_credential_file,
+    from 邮箱注册.outlook_token_export import (
+        BUILTIN_CLIENT_ID as 邮箱注册_BUILTIN_CLIENT_ID,
+        credential_file_for as 邮箱注册_credential_file_for,
+        locate_credential_file as 邮箱注册_locate_credential_file,
         save_created_outlook_account,
     )
-    from ninjemail.credential_tools import (
+    from 邮箱注册.credential_tools import (
         DEFAULT_CREDENTIAL_DIR,
         AUXILIARY_MAIL_DIR,
         ensure_credential_dirs,
-        validate_credentials as ninjemail_validate_credentials,
+        validate_credentials as 邮箱注册_validate_credentials,
     )
 except Exception as _cred_exc:
     DEFAULT_CREDENTIAL_DIR = None
     AUXILIARY_MAIL_DIR = None
-    NINJEMAIL_BUILTIN_CLIENT_ID = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
-    NINJEMAIL_CREDENTIAL_IMPORT_ERROR = str(_cred_exc)
+    邮箱注册_BUILTIN_CLIENT_ID = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
+    邮箱注册_CREDENTIAL_IMPORT_ERROR = str(_cred_exc)
 else:
-    NINJEMAIL_CREDENTIAL_IMPORT_ERROR = ""
+    邮箱注册_CREDENTIAL_IMPORT_ERROR = ""
 
 
-# --------------- Ninjemail backend adapters ---------------
+# --------------- 邮箱注册 backend adapters ---------------
 try:
-    from ninjemail.service_adapters import (
+    from 邮箱注册.service_adapters import (
         normalize_proxy,
         parse_proxy_lines,
         check_proxy_list,
@@ -101,9 +101,9 @@ except Exception as _adapter_exc:
     render_proxy_list = None
     load_runtime_config = None
     save_runtime_config = None
-    NINJEMAIL_ADAPTER_IMPORT_ERROR = str(_adapter_exc)
+    邮箱注册_ADAPTER_IMPORT_ERROR = str(_adapter_exc)
 else:
-    NINJEMAIL_ADAPTER_IMPORT_ERROR = ""
+    邮箱注册_ADAPTER_IMPORT_ERROR = ""
 
 
 def _creation_proxy_items_from_config(proxy: dict[str, Any]) -> list[str]:
@@ -131,12 +131,12 @@ def _creation_proxy_items_from_config(proxy: dict[str, Any]) -> list[str]:
 
 
 def _normalize_proxy_text(raw: str) -> tuple[list[str], list[str]]:
-    """使用 Ninjemail 原始代理规范化能力:host:port:user:pass -> http://user:pass@host:port,并去重。"""
+    """使用 邮箱注册 原始代理规范化能力:host:port:user:pass -> http://user:pass@host:port,并去重。"""
     errors: list[str] = []
     if not raw or not raw.strip():
         return [], []
     if parse_proxy_lines is None:
-        return [], [f"Ninjemail service_adapters 导入失败: {NINJEMAIL_ADAPTER_IMPORT_ERROR}"]
+        return [], [f"邮箱注册 service_adapters 导入失败: {邮箱注册_ADAPTER_IMPORT_ERROR}"]
     candidates = parse_proxy_lines(raw, source="token_fastapi")
     normalized = [c.url for c in candidates]
     input_nonempty = [line.strip() for line in str(raw).splitlines() if line.strip() and not line.strip().startswith("#")]
@@ -166,7 +166,7 @@ async def lifespan(app_instance):
     # 启动 mihomo 订阅代理（后台线程，不阻塞服务器启动）
     def _start_mihomo_bg():
         try:
-            from ninjemail.subscription_proxy import get_manager as _get_sub_mgr
+            from 邮箱注册.subscription_proxy import get_manager as _get_sub_mgr
             _mgr = _get_sub_mgr()
             if _mgr.subscriptions:
                 ok, msg = _mgr.start()
@@ -175,7 +175,7 @@ async def lifespan(app_instance):
                 else:
                     print(f"[代理] ⚠️ mihomo 启动失败: {msg}")
             else:
-                from ninjemail.subscription_proxy import detect_system_proxy
+                from 邮箱注册.subscription_proxy import detect_system_proxy
                 proxy = detect_system_proxy()
                 if proxy:
                     print(f"[代理] ✅ 检测到系统代理: {proxy}")
@@ -189,7 +189,7 @@ async def lifespan(app_instance):
 
     # ─── 关闭阶段: 清理 mihomo ───
     try:
-        from ninjemail.subscription_proxy import get_manager as _get_sub_mgr
+        from 邮箱注册.subscription_proxy import get_manager as _get_sub_mgr
         _mgr = _get_sub_mgr()
         _mgr.cleanup()
         print("[代理] ✅ mihomo 已随主程序关闭")
@@ -737,13 +737,13 @@ def _credential_output_dir() -> str:
     return BATCH_REG_DIR
 
 def save_credential_file(email, password, client_id="", refresh_token=""):
-    """保存四凭证到 Ninjemail 原始凭证目录（并发安全）。"""
+    """保存四凭证到 邮箱注册 原始凭证目录（并发安全）。"""
     with _FILE_WRITE_LOCK:
         return _save_credential_file_impl(email, password, client_id, refresh_token)
 
 def _save_credential_file_impl(email, password, client_id="", refresh_token=""):
     """保存四凭证的实际实现（内部函数，由 save_credential_file 加锁调用）。"""
-    client_id = client_id or (globals().get("NINJEMAIL_BUILTIN_CLIENT_ID") or "14d82eec-204b-4c2f-b7e8-296a70dab67e")
+    client_id = client_id or (globals().get("邮箱注册_BUILTIN_CLIENT_ID") or "14d82eec-204b-4c2f-b7e8-296a70dab67e")
     output_dir = _credential_output_dir()
     os.makedirs(output_dir, exist_ok=True)
     safe = re.sub(r'[^a-zA-Z0-9@._-]', '_', email.lower()).strip('._-')
@@ -753,13 +753,13 @@ def _save_credential_file_impl(email, password, client_id="", refresh_token=""):
                 email, password, client_id=client_id, refresh_token=refresh_token or "",
                 out_dir=output_dir, source="token_fastapi_integrated", final_state="registered",
             )
-            path = result.get("credential_path") or result.get("combo_path") or str(ninjemail_credential_file_for(email, output_dir))
+            path = result.get("credential_path") or result.get("combo_path") or str(邮箱注册_credential_file_for(email, output_dir))
             if not os.path.exists(path):
                 with open(path, 'w', encoding='utf-8') as f:
                     f.write(f"{email}----{password}----{client_id}----{refresh_token or ''}\n")
             return path
     except Exception as exc:
-        reg_log(f"Ninjemail 四凭证保存函数失败,使用兼容写入:{exc}", "warn", "credential_save_fallback")
+        reg_log(f"邮箱注册 四凭证保存函数失败,使用兼容写入:{exc}", "warn", "credential_save_fallback")
     path = os.path.join(output_dir, f"{safe}.txt")
     with open(path, 'w', encoding='utf-8') as f:
         f.write(f"{email}----{password}----{client_id}----{refresh_token or ''}\n")
@@ -807,7 +807,7 @@ def _try_obtain_refresh_token(ninja_instance, email, password, provider):
 
     # --- CDPBrowser 适配器:将 CDP API 包装成 Selenium WebDriver 接口 ---
     try:
-        from ninjemail.cdp_browser import CDPBrowser as _CDPBrowser
+        from 邮箱注册.cdp_browser import CDPBrowser as _CDPBrowser
     except ImportError:
         _CDPBrowser = None
 
@@ -978,19 +978,19 @@ def run_registration_task(provider, count, password, group_name, proxy_list,
     reg_log(f"任务启动:服务商={provider},数量={actual_count},并发={concurrent},四凭证目录={credential_dir}", "step", "start")
     # 彻底重置 CDP 引擎的所有控制状态（全局变量+线程状态字典），防止残留 stop/paused 导致新任务秒退
     try:
-        from ninjemail.cdp_outlook import reset_all_states
+        from 邮箱注册.cdp_outlook import reset_all_states
         reset_all_states()
     except Exception as e:
         logger.warning("重置 CDP 控制状态失败: %s，尝试旧方式", e)
         try:
-            from ninjemail.cdp_outlook import set_registration_stop, set_registration_paused, set_captcha_force_skip
+            from 邮箱注册.cdp_outlook import set_registration_stop, set_registration_paused, set_captcha_force_skip
             set_registration_stop(False)
             set_registration_paused(False)
             set_captcha_force_skip(False)
         except Exception:
             pass
     try:
-        from ninjemail.cdp_outlook import register_outlook_account, OutlookAccount, _random_account
+        from 邮箱注册.cdp_outlook import register_outlook_account, OutlookAccount, _random_account
 
         normalized_proxies, proxy_errors = _normalize_proxy_text(proxy_list or "")
         if proxy_errors:
@@ -1355,7 +1355,7 @@ def run_registration_task(provider, count, password, group_name, proxy_list,
             # 清理所有工作实例
             for proc in _worker_procs:
                 try:
-                    from ninjemail.subscription_proxy import SubscriptionProxyManager as _SPM
+                    from 邮箱注册.subscription_proxy import SubscriptionProxyManager as _SPM
                     _SPM.cleanup_worker(proc)
                 except Exception:
                     pass
@@ -1380,7 +1380,7 @@ def run_registration_task(provider, count, password, group_name, proxy_list,
 def available_browsers():
     """检测系统已安装的浏览器 + 所有支持的浏览器下载信息"""
     try:
-        from ninjemail.cdp_browser import detect_installed_browsers, BROWSER_DOWNLOAD_INFO, BROWSER_PATHS
+        from 邮箱注册.cdp_browser import detect_installed_browsers, BROWSER_DOWNLOAD_INFO, BROWSER_PATHS
         installed = detect_installed_browsers()
         # 合并所有支持的浏览器（已安装 + 未安装但可下载）
         all_browsers = {}
@@ -1402,7 +1402,7 @@ def register_providers():
     return {
         "python_supported": sorted(SUPPORTED_PY_REGISTER_PROVIDERS),
         "extension_only": sorted(EXTENSION_ONLY_PROVIDERS),
-        "note": "extension_only 服务商需通过 Ninjemail 浏览器扩展流程执行,注册后导入凭证。"
+        "note": "extension_only 服务商需通过 邮箱注册 浏览器扩展流程执行,注册后导入凭证。"
     }
 
 @app.post("/api/register/start")
@@ -1435,7 +1435,7 @@ def register_status():
         state = dict(REG_STATE)
     # 同步 CDP 引擎的当前步骤
     try:
-        from ninjemail.cdp_outlook import get_current_reg_step
+        from 邮箱注册.cdp_outlook import get_current_reg_step
         state["current_cdp_step"] = get_current_reg_step()
     except Exception:
         pass
@@ -1450,7 +1450,7 @@ def register_stop():
         REG_STATE["running"] = False  # 立即标记为非运行，让前端按钮立即可用
         REG_STATE["current"] = "\u23f9 \u4efb\u52a1\u5df2\u505c\u6b62"
     try:
-        from ninjemail.cdp_outlook import set_registration_stop, set_registration_paused, stop_registration_browser
+        from 邮箱注册.cdp_outlook import set_registration_stop, set_registration_paused, stop_registration_browser
         set_registration_stop(True)
         set_registration_paused(False)
         # \u5173\u95ed\u6ce8\u518c\u6d4f\u89c8\u5668\uff0c\u91ca\u653e\u963b\u585e\u4e2d\u7684 CDP \u8c03\u7528
@@ -1466,7 +1466,7 @@ def register_pause():
             return {"status": "error", "message": "没有运行中的注册任务"}
         REG_STATE["paused"] = True
     try:
-        from ninjemail.cdp_outlook import set_registration_paused
+        from 邮箱注册.cdp_outlook import set_registration_paused
         set_registration_paused(True)
     except Exception:
         pass
@@ -1483,7 +1483,7 @@ def register_resume():
         REG_STATE["paused"] = False
         REG_STATE["current"] = "▶ 已恢复，正在识别页面状态..."
     try:
-        from ninjemail.cdp_outlook import set_registration_paused, set_captcha_force_skip
+        from 邮箱注册.cdp_outlook import set_registration_paused, set_captcha_force_skip
         set_registration_paused(False)
         set_captcha_force_skip(False)  # 重置，让状态机自然处理
     except Exception:
@@ -1496,7 +1496,7 @@ def register_continue_captcha():
     with REG_LOCK:
         REG_STATE["captcha_manual_solved"] = True
     try:
-        from ninjemail.cdp_outlook import set_captcha_force_skip
+        from 邮箱注册.cdp_outlook import set_captcha_force_skip
         set_captcha_force_skip(True)
     except Exception:
         pass
@@ -1504,24 +1504,24 @@ def register_continue_captcha():
 
 
 
-# --------------- Ninjemail Credential Compatibility API ---------------
-@app.get("/api/ninjemail/credentials/dirs")
-def ninjemail_credential_dirs():
+# --------------- 邮箱注册 Credential Compatibility API ---------------
+@app.get("/api/邮箱注册/credentials/dirs")
+def 邮箱注册_credential_dirs():
     try:
         dirs = ensure_credential_dirs() if callable(ensure_credential_dirs) else {}
     except Exception as exc:
         return {"ok": False, "reason": str(exc), "credential_dir": BATCH_REG_DIR, "batch_dir": BATCH_REG_DIR}
     return {"ok": True, "credential_dir": dirs.get("credential_dir") or _credential_output_dir(), "auxiliary_dir": dirs.get("auxiliary_dir") or "", "batch_dir": BATCH_REG_DIR}
 
-@app.get("/api/ninjemail/credentials/status")
-def ninjemail_credential_status(email: str = ""):
+@app.get("/api/邮箱注册/credentials/status")
+def 邮箱注册_credential_status(email: str = ""):
     email = (email or "").strip().lower()
     output_dir = _credential_output_dir()
     if not email or "@" not in email:
         return {"ok": False, "reason": "缺少邮箱", "credential_dir": output_dir}
     try:
-        path = ninjemail_locate_credential_file(email, output_dir) if callable(ninjemail_locate_credential_file) else None
-        expected = ninjemail_credential_file_for(email, output_dir) if callable(ninjemail_credential_file_for) else Path(output_dir) / f"{email}.txt"
+        path = 邮箱注册_locate_credential_file(email, output_dir) if callable(邮箱注册_locate_credential_file) else None
+        expected = 邮箱注册_credential_file_for(email, output_dir) if callable(邮箱注册_credential_file_for) else Path(output_dir) / f"{email}.txt"
         if not path or not Path(path).is_file():
             return {"ok": True, "email": email, "exists": False, "has_refresh_token": False, "credential_path": str(expected), "credential_dir": output_dir}
         line = Path(path).read_text(encoding="utf-8-sig").splitlines()[0].strip()
@@ -1530,18 +1530,18 @@ def ninjemail_credential_status(email: str = ""):
     except Exception as exc:
         return {"ok": False, "reason": str(exc), "credential_dir": output_dir}
 
-@app.post("/api/ninjemail/credentials/validate")
-def ninjemail_credentials_validate(payload: dict[str, Any] = None):
+@app.post("/api/邮箱注册/credentials/validate")
+def 邮箱注册_credentials_validate(payload: dict[str, Any] = None):
     payload = payload or {}
     try:
-        if callable(ninjemail_validate_credentials):
-            return ninjemail_validate_credentials(payload)
-        return {"ok": False, "reason": f"凭证校验模块不可用: {NINJEMAIL_CREDENTIAL_IMPORT_ERROR}"}
+        if callable(邮箱注册_validate_credentials):
+            return 邮箱注册_validate_credentials(payload)
+        return {"ok": False, "reason": f"凭证校验模块不可用: {邮箱注册_CREDENTIAL_IMPORT_ERROR}"}
     except Exception as exc:
         return {"ok": False, "reason": str(exc)}
 
-@app.post("/api/ninjemail/credentials/open_dir")
-def ninjemail_credentials_open_dir(payload: dict[str, Any] = None):
+@app.post("/api/邮箱注册/credentials/open_dir")
+def 邮箱注册_credentials_open_dir(payload: dict[str, Any] = None):
     payload = payload or {}
     target = str(payload.get("credential_path") or payload.get("credentialPath") or payload.get("output_dir") or payload.get("outputDir") or _credential_output_dir()).strip()
     p = Path(target).expanduser()
@@ -1555,9 +1555,9 @@ def ninjemail_credentials_open_dir(payload: dict[str, Any] = None):
         # Fallback: just confirm directory exists
         return {"ok": True, "output_dir": str(p), "reason": f"目录已就绪,自动打开失败({exc}),请手动打开"}
 
-# --------------- Ninjemail Backend Compatibility API ---------------
-@app.post("/api/ninjemail/proxy/normalize")
-def ninjemail_proxy_normalize(req: ProxyTextRequest):
+# --------------- 邮箱注册 Backend Compatibility API ---------------
+@app.post("/api/邮箱注册/proxy/normalize")
+def 邮箱注册_proxy_normalize(req: ProxyTextRequest):
     proxies, errors = _normalize_proxy_text(req.proxy_text)
     return {
         "status": "ok" if proxies else "error",
@@ -1569,10 +1569,10 @@ def ninjemail_proxy_normalize(req: ProxyTextRequest):
         "message": f"已转换 {len(proxies)} 个代理" if proxies else (errors[0] if errors else "代理列表为空"),
     }
 
-@app.get("/api/ninjemail/proxy/load")
-def ninjemail_proxy_load():
+@app.get("/api/邮箱注册/proxy/load")
+def 邮箱注册_proxy_load():
     if load_runtime_config is None:
-        return {"ok": False, "status": "error", "reason": f"Ninjemail service_adapters 导入失败: {NINJEMAIL_ADAPTER_IMPORT_ERROR}", "proxies": [], "proxy_text": ""}
+        return {"ok": False, "status": "error", "reason": f"邮箱注册 service_adapters 导入失败: {邮箱注册_ADAPTER_IMPORT_ERROR}", "proxies": [], "proxy_text": ""}
     try:
         config = load_runtime_config()
         proxy = config.get("proxy", {}) or {}
@@ -1592,10 +1592,10 @@ def ninjemail_proxy_load():
     except Exception as exc:
         return {"ok": False, "status": "error", "reason": str(exc), "proxies": [], "proxy_text": "", "count": 0}
 
-@app.post("/api/ninjemail/proxy/check")
-def ninjemail_proxy_check(req: ProxyTextRequest):
+@app.post("/api/邮箱注册/proxy/check")
+def 邮箱注册_proxy_check(req: ProxyTextRequest):
     if check_proxy_list is None or render_proxy_list is None:
-        return {"ok": False, "status": "error", "reason": f"Ninjemail service_adapters 导入失败: {NINJEMAIL_ADAPTER_IMPORT_ERROR}", "count": 0}
+        return {"ok": False, "status": "error", "reason": f"邮箱注册 service_adapters 导入失败: {邮箱注册_ADAPTER_IMPORT_ERROR}", "count": 0}
     proxy_text = (req.proxy_text or "").strip()
     if not proxy_text:
         return {"ok": False, "status": "error", "reason": "代理列表为空", "count": 0}
@@ -1611,16 +1611,16 @@ def ninjemail_proxy_check(req: ProxyTextRequest):
     except Exception as exc:
         return {"ok": False, "status": "error", "reason": str(exc), "count": 0}
 
-@app.post("/api/ninjemail/proxy/save")
-def ninjemail_proxy_save(req: ProxyTextRequest):
+@app.post("/api/邮箱注册/proxy/save")
+def 邮箱注册_proxy_save(req: ProxyTextRequest):
     if load_runtime_config is None or save_runtime_config is None:
-        return {"ok": False, "status": "error", "reason": f"Ninjemail service_adapters 导入失败: {NINJEMAIL_ADAPTER_IMPORT_ERROR}", "count": 0}
+        return {"ok": False, "status": "error", "reason": f"邮箱注册 service_adapters 导入失败: {邮箱注册_ADAPTER_IMPORT_ERROR}", "count": 0}
     raw = (req.proxy_text or "").strip()
     if not raw:
         return {"ok": False, "status": "error", "reason": "代理列表为空", "count": 0}
     try:
         if req.check:
-            checked = ninjemail_proxy_check(req)
+            checked = 邮箱注册_proxy_check(req)
             if not checked.get("ok"):
                 return checked
             items = checked.get("proxies") or []
@@ -1650,8 +1650,8 @@ def ninjemail_proxy_save(req: ProxyTextRequest):
         return {"ok": False, "status": "error", "reason": f"保存失败: {exc}", "count": 0}
 
 
-@app.post("/api/ninjemail/proxy/detect")
-def ninjemail_proxy_detect(req: ProxyTextRequest):
+@app.post("/api/邮箱注册/proxy/detect")
+def 邮箱注册_proxy_detect(req: ProxyTextRequest):
     """两阶段检测：curl 快速预筛 → Chrome CDP 实际打开注册页验证"""
     global _AVAILABLE_PROXIES
     raw = (req.proxy_text or "").strip()
@@ -1766,21 +1766,21 @@ def ninjemail_proxy_detect(req: ProxyTextRequest):
     }
 
 
-@app.get("/api/ninjemail/proxy/available")
-def ninjemail_proxy_available():
+@app.get("/api/邮箱注册/proxy/available")
+def 邮箱注册_proxy_available():
     """获取当前可用代理列表"""
     with REG_LOCK:
         proxies = REG_STATE.get("available_proxies", [])
         rotate = REG_STATE.get("proxy_rotate", False)
     return {"ok": True, "proxies": proxies, "count": len(proxies), "rotate": rotate}
 
-@app.get("/api/ninjemail/proxy/detect_progress")
-def ninjemail_proxy_detect_progress():
+@app.get("/api/邮箱注册/proxy/detect_progress")
+def 邮箱注册_proxy_detect_progress():
     """获取代理检测进度"""
     return {"ok": True, **_PROXY_DETECT_PROGRESS}
 
-@app.post("/api/ninjemail/proxy/clear")
-def ninjemail_proxy_clear():
+@app.post("/api/邮箱注册/proxy/clear")
+def 邮箱注册_proxy_clear():
     """清空可用代理列表"""
     global _AVAILABLE_PROXIES, _PROXY_ROTATE
     _AVAILABLE_PROXIES = []
@@ -1791,8 +1791,8 @@ def ninjemail_proxy_clear():
     return {"ok": True, "message": "已清空可用代理列表"}
 
 
-@app.post("/api/ninjemail/proxy/rotate")
-def ninjemail_proxy_set_rotate(req: dict = Body(None)):
+@app.post("/api/邮箱注册/proxy/rotate")
+def 邮箱注册_proxy_set_rotate(req: dict = Body(None)):
     """设置代理轮询开关"""
     global _PROXY_ROTATE
     enabled = bool((req or {}).get("enabled", True))
@@ -1885,19 +1885,19 @@ def local_proxy_test():
     return {"ok": False, "reason": f"本地代理连接失败: {last_error}"}
 
 
-@app.get("/api/ninjemail/config")
-def ninjemail_config_get():
+@app.get("/api/邮箱注册/config")
+def 邮箱注册_config_get():
     if load_runtime_config is None:
-        return {"ok": False, "status": "error", "reason": f"Ninjemail service_adapters 导入失败: {NINJEMAIL_ADAPTER_IMPORT_ERROR}", "config": {}}
+        return {"ok": False, "status": "error", "reason": f"邮箱注册 service_adapters 导入失败: {邮箱注册_ADAPTER_IMPORT_ERROR}", "config": {}}
     try:
         return {"ok": True, "status": "ok", "config": load_runtime_config()}
     except Exception as exc:
         return {"ok": False, "status": "error", "reason": str(exc), "config": {}}
 
-@app.post("/api/ninjemail/config")
-def ninjemail_config_save(req: RuntimeConfigRequest):
+@app.post("/api/邮箱注册/config")
+def 邮箱注册_config_save(req: RuntimeConfigRequest):
     if save_runtime_config is None:
-        return {"ok": False, "status": "error", "reason": f"Ninjemail service_adapters 导入失败: {NINJEMAIL_ADAPTER_IMPORT_ERROR}"}
+        return {"ok": False, "status": "error", "reason": f"邮箱注册 service_adapters 导入失败: {邮箱注册_ADAPTER_IMPORT_ERROR}"}
     try:
         path = save_runtime_config(req.config or {})
         return {"ok": True, "status": "ok", "path": str(path)}
@@ -1960,8 +1960,8 @@ def debug_info():
 
 # --------------- Subscription Proxy API ---------------
 try:
-    from ninjemail.subscription_proxy import get_manager as _get_sub_proxy_manager
-    from ninjemail.subscription_proxy import test_proxy as _test_sys_proxy
+    from 邮箱注册.subscription_proxy import get_manager as _get_sub_proxy_manager
+    from 邮箱注册.subscription_proxy import test_proxy as _test_sys_proxy
     _SUB_PROXY_AVAILABLE = True
 except Exception as _sub_exc:
     _SUB_PROXY_AVAILABLE = False
@@ -2162,3 +2162,4 @@ if __name__ == "__main__":
     import uvicorn
     _kill_port_occupants(PORT)
     uvicorn.run(app, host="0.0.0.0", port=PORT)
+

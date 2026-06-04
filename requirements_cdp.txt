@@ -1,4 +1,5 @@
-# ninjemail CDP Hybrid Dependencies
+﻿# 邮箱注册 CDP Hybrid Dependencies
 # Install with: pip install -r requirements_cdp.txt
 
 websocket-client>=1.6.0
+

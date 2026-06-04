@@ -1,8 +1,8 @@
-{
+﻿{
   "manifest_version": 3,
-  "name": "Ninjemail 流程助手",
+  "name": "邮箱注册 流程助手",
   "version": "0.2.39",
-  "description": "Ninjemail 浏览器侧流程、服务、日志和阻塞点诊断面板。",
+  "description": "邮箱注册 浏览器侧流程、服务、日志和阻塞点诊断面板。",
   "permissions": [
     "sidePanel",
     "tabs",
@@ -115,6 +115,7 @@
     }
   ],
   "action": {
-    "default_title": "Ninjemail 流程助手"
+    "default_title": "邮箱注册 流程助手"
   }
 }
+

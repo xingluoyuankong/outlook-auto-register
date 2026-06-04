@@ -212,10 +212,10 @@
         <div class="tab-page active" id="tab-register">
             <div class="register-page">
                 <div class="reg-card">
-                    <h3>🚀 Ninjemail 批量注册</h3>
+                    <h3>🚀 邮箱注册 批量注册</h3>
                     <div style="font-size:13px; color:var(--text-light); line-height:1.7;">
-                        前端以 token-mail-app 的清爽页面为主，后端以 Ninjemail 原始注册、代理、凭证能力为主。<br>
-                        四凭证格式：邮箱----密码----Client ID----Refresh Token；默认保存到 Ninjemail 浏览器插件凭证目录。
+                        前端以 token-mail-app 的清爽页面为主，后端以 邮箱注册 原始注册、代理、凭证能力为主。<br>
+                        四凭证格式：邮箱----密码----Client ID----Refresh Token；默认保存到 邮箱注册 浏览器插件凭证目录。
                     </div>
                 </div>
 
@@ -260,7 +260,7 @@
                             <input id="regConcurrent" class="reg-input" type="number" min="1" max="10" value="1" title="同时注册的账号数，每个并发占用一个浏览器">
                         </div>
                         <div class="reg-field">
-                            <label>统一密码（留空则 Ninjemail 自动生成）</label>
+                            <label>统一密码（留空则 邮箱注册 自动生成）</label>
                             <input id="regPassword" class="reg-input" type="text" placeholder="可留空">
                         </div>
                         <div class="reg-field">
@@ -680,7 +680,7 @@
 
         async function loadProxyState() {
             try {
-                const res = await fetch(`${API}/api/ninjemail/proxy/available`);
+                const res = await fetch(`${API}/api/邮箱注册/proxy/available`);
                 const data = await res.json();
                 if (data.proxies && data.proxies.length > 0) {
                     const countEl = document.getElementById('availableProxyCount');
@@ -1652,7 +1652,7 @@ async function detectProxies() {
             // 启动进度轮询
             let progressTimer = setInterval(async () => {
                 try {
-                    const r = await fetch(`${API}/api/ninjemail/proxy/detect_progress`);
+                    const r = await fetch(`${API}/api/邮箱注册/proxy/detect_progress`);
                     const p = await r.json();
                     if (p.running && progressText) {
                         const stage = p.stage || '检测中';
@@ -1663,7 +1663,7 @@ async function detectProxies() {
             }, 500);
 
             try {
-                const res = await fetch(`${API}/api/ninjemail/proxy/detect`, {
+                const res = await fetch(`${API}/api/邮箱注册/proxy/detect`, {
                     method: 'POST', headers: {'Content-Type':'application/json'},
                     body: JSON.stringify({ proxy_text: text })
                 });
@@ -1743,14 +1743,14 @@ function clearAvailableProxies() {
             if (listEl) listEl.innerHTML = '<div style="color:#9ca3af; text-align:center; padding:10px;">已清空，请重新检测代理</div>';
             if (toggle) toggle.checked = false;
             // 通知后端清空
-            fetch(`${API}/api/ninjemail/proxy/clear`, {method:'POST'}).catch(()=>{});
+            fetch(`${API}/api/邮箱注册/proxy/clear`, {method:'POST'}).catch(()=>{});
         }
 
 async function toggleProxyRotate() {
             const toggle = document.getElementById('proxyRotateToggle');
             const enabled = toggle ? toggle.checked : false;
             try {
-                await fetch(`${API}/api/ninjemail/proxy/rotate`, {
+                await fetch(`${API}/api/邮箱注册/proxy/rotate`, {
                     method: 'POST', headers: {'Content-Type':'application/json'},
                     body: JSON.stringify({ enabled })
                 });
@@ -1770,7 +1770,7 @@ async function handleRegProxyFileUpload(event) {
 
 async function loadCredentialDirs() {
             try {
-                const res = await fetch(`${API}/api/ninjemail/credentials/dirs`);
+                const res = await fetch(`${API}/api/邮箱注册/credentials/dirs`);
                 const data = await res.json();
                 lastCredentialDir = data.credential_dir || data.batch_dir || '';
                 const el = document.getElementById('regCredentialDir');
@@ -1785,7 +1785,7 @@ async function loadCredentialDirs() {
 
 async function loadRegProxyBackend() {
             try {
-                const res = await fetch(`${API}/api/ninjemail/proxy/load`);
+                const res = await fetch(`${API}/api/邮箱注册/proxy/load`);
                 const data = await res.json();
                 if (data.proxy_text) document.getElementById('regProxyList').value = data.proxy_text;
                 regProxyStatus(data.ok ? `已从后端加载 ${data.count || 0} 个代理` : (data.reason || '加载失败'), data.ok ? 'ok' : 'warn');
@@ -1796,7 +1796,7 @@ async function normalizeRegProxy() {
             const text = document.getElementById('regProxyList').value || '';
             if (!text.trim()) { regProxyStatus('代理列表为空', 'warn'); return false; }
             try {
-                const res = await fetch(`${API}/api/ninjemail/proxy/normalize`, {
+                const res = await fetch(`${API}/api/邮箱注册/proxy/normalize`, {
                     method: 'POST', headers: {'Content-Type':'application/json'},
                     body: JSON.stringify({ proxy_text: text })
                 });
@@ -1813,7 +1813,7 @@ async function normalizeRegProxy() {
 async function openCredentialDir() {
             try {
                 const body = { output_dir: lastCredentialDir || '' };
-                const res = await fetch(`${API}/api/ninjemail/credentials/open_dir`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+                const res = await fetch(`${API}/api/邮箱注册/credentials/open_dir`, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
                 const data = await res.json();
                 const el = document.getElementById('regCredentialDir');
                 if (el) el.textContent = data.ok ? `📂 已打开四凭证目录：${data.output_dir}` : `打开失败：${data.reason || ''}`;
@@ -2076,7 +2076,7 @@ async function saveRegProxyBackend(check=false) {
                 ? `${_lastDetectedAvailableUrls.length} 个可用代理`
                 : '当前列表';
             try {
-                const res = await fetch(`${API}/api/ninjemail/proxy/save`, {
+                const res = await fetch(`${API}/api/邮箱注册/proxy/save`, {
                     method: 'POST', headers: {'Content-Type':'application/json'},
                     body: JSON.stringify({ proxy_text: text, check })
                 });
@@ -2110,7 +2110,7 @@ async function skipCaptcha() {
             window._lastRt = '';
             const provider = document.getElementById('regProvider').value;
             if (!PY_REGISTER_PROVIDERS.has(provider)) {
-                alert('该服务商目前属于 Ninjemail 浏览器扩展流程，不能由 token 前端直接启动 Python 后端创建。请在浏览器扩展侧完成注册，再把导出的凭证导入本系统。');
+                alert('该服务商目前属于 邮箱注册 浏览器扩展流程，不能由 token 前端直接启动 Python 后端创建。请在浏览器扩展侧完成注册，再把导出的凭证导入本系统。');
                 return;
             }
             // 检查浏览器是否已安装
@@ -2139,7 +2139,7 @@ async function skipCaptcha() {
             console.log('[REG] Sending:', {provider, count, concurrent, browser, nodeRotate});
             // 先设置节点轮循状态
             try {
-                await fetch(`${API}/api/ninjemail/proxy/rotate`, {
+                await fetch(`${API}/api/邮箱注册/proxy/rotate`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({enabled: nodeRotate})
@@ -2614,3 +2614,4 @@ async function stopRegisterTask() {
 </script>
 </body>
 </html>
+

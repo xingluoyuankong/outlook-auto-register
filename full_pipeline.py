@@ -1,7 +1,7 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 Full Pipeline: Register Outlook Account → Get Refresh Token → Save 4 Credentials
-1. Register via Ninjemail (Selenium + proxy)
+1. Register via 邮箱注册 (Selenium + proxy)
 2. Verify account exists (ROPC)
 3. Get RT via Auth Code Flow + PKCE + CDP automation
 4. Save: email----password----client_id----refresh_token
@@ -10,7 +10,7 @@ Full Pipeline: Register Outlook Account → Get Refresh Token → Save 4 Credent
 import sys, json, time, subprocess, os, urllib.request, urllib.parse, urllib.error
 import base64, hashlib, secrets, socket, threading, http.server, logging
 
-sys.path.insert(0, "/home/boxd/ninjemail")
+sys.path.insert(0, "/home/boxd/邮箱注册")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
 log = logging.getLogger("full_pipeline")
@@ -18,8 +18,8 @@ log = logging.getLogger("full_pipeline")
 # ── Config ──
 CLIENT_ID = "14d82eec-204b-4c2f-b7e8-296a70dab67e"
 TENANT = "consumers"
-CREDENTIAL_DIR = "/home/boxd/ninjemail/browser_extension/邮箱凭证"
-PROXY_FILE = "/home/boxd/proxyhub/data/ninjemail_proxies.txt"
+CREDENTIAL_DIR = "/home/boxd/邮箱注册/browser_extension/邮箱凭证"
+PROXY_FILE = "/home/boxd/proxyhub/data/邮箱注册_proxies.txt"
 DEFAULT_SCOPES = [
     "offline_access", "openid", "profile",
     "https://graph.microsoft.com/User.Read",
@@ -229,7 +229,7 @@ def register_account(proxy):
     """
     log.info(f"Registering with proxy: {proxy}")
     try:
-        from ninjemail.cdp_outlook import register_outlook_account, OutlookAccount
+        from 邮箱注册.cdp_outlook import register_outlook_account, OutlookAccount
 
         result = register_outlook_account(proxy=proxy, headless=False)
 
@@ -622,3 +622,4 @@ if __name__ == "__main__":
     else:
         print("Pipeline failed")
         sys.exit(1)
+

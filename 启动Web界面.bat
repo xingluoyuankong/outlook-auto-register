@@ -7,7 +7,7 @@ cd /d "%ROOT%"
 
 echo.
 echo ========================================
-echo   Ninjemail + Token-Mail Integrated System
+echo   ???? + Token-Mail Integrated System
 echo ========================================
 echo.
 
@@ -48,7 +48,7 @@ if errorlevel 1 (
 )
 %PY% -c "import selenium, faker" >nul 2>nul
 if errorlevel 1 (
-    echo       Installing Ninjemail deps...
+    echo       Installing ???? deps...
     %PY% -m pip install selenium undetected-chromedriver faker toml ddddocr PySocks requests fake_useragent --quiet --disable-pip-version-check
 )
 echo [OK] Dependencies ready
@@ -61,10 +61,11 @@ echo   Press Ctrl+C to stop
 echo ========================================
 echo.
 
-set "PYTHONPATH=%ROOT%ninjemail;%ROOT%;%PYTHONPATH%"
+set "PYTHONPATH=%ROOT%????;%ROOT%;%PYTHONPATH%"
 %PY% "%ROOT%integrated_server.py"
 if not "%ERRORLEVEL%"=="0" (
     echo.
     echo [ERROR] Exit code: %ERRORLEVEL%
     pause
 )
+

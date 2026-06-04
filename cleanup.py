@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+﻿#!/usr/bin/env python3
 """
 项目结构清理脚本
 将测试/debug/原型文件移到 archive/ 目录，保留核心文件。
@@ -10,8 +10,8 @@ from pathlib import Path
 
 PROJECT = Path(__file__).parent
 
-# ── ninjemail/ 目录下的测试/debug/原型文件 → ninjemail/archive/ ──
-NINJEMAIL_ARCHIVE = [
+# ── 邮箱注册/ 目录下的测试/debug/原型文件 → 邮箱注册/archive/ ──
+邮箱注册_ARCHIVE = [
     # 代理测试迭代 (7个)
     "test_proxy.py", "test_proxy2.py", "test_proxy3.py", "test_proxy4.py",
     "test_proxy5.py", "test_proxy6.py", "test_proxy_chrome.py", "test_chrome_proxy.py",
@@ -78,14 +78,14 @@ def move_files(file_list, src_dir, dst_dir):
 
 def main():
     print("=" * 60)
-    print("  Ninjemail 项目结构清理")
+    print("  邮箱注册 项目结构清理")
     print("=" * 60)
 
-    # 1. 移动 ninjemail/ 下的测试/debug 文件
-    print(f"\n📁 移动 ninjemail/ 下的测试/debug 文件 → ninjemail/archive/")
-    n_dir = os.path.join(PROJECT, "ninjemail")
+    # 1. 移动 邮箱注册/ 下的测试/debug 文件
+    print(f"\n📁 移动 邮箱注册/ 下的测试/debug 文件 → 邮箱注册/archive/")
+    n_dir = os.path.join(PROJECT, "邮箱注册")
     n_archive = os.path.join(n_dir, "archive")
-    m, s = move_files(NINJEMAIL_ARCHIVE, n_dir, n_archive)
+    m, s = move_files(邮箱注册_ARCHIVE, n_dir, n_archive)
     print(f"   移动: {m}, 跳过(不存在): {s}")
 
     # 2. 移动根目录测试文件
@@ -114,7 +114,7 @@ def main():
     for f in core_files:
         print(f"  {f}")
 
-    print(f"\n📋 ninjemail/ 核心文件:")
+    print(f"\n📋 邮箱注册/ 核心文件:")
     for f in sorted(os.listdir(n_dir)):
         fp = os.path.join(n_dir, f)
         if os.path.isfile(fp) and f.endswith('.py') and not f.startswith('test_') and not f.startswith('debug_'):
@@ -123,3 +123,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

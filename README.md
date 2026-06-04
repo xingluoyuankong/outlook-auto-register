@@ -1,41 +1,41 @@
-<p align="center">   <img src="logo/logo.png" alt="Ninjemail logo"/> </p>
+﻿<p align="center">   <img src="logo/logo.png" alt="邮箱注册 logo"/> </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.11-blue.svg?style=flat-square" alt="Python Badge">
   <img src="https://img.shields.io/badge/code%20style-pep8-orange.svg?style=flat-square" alt="PEP8 Badge">
-  <img src="https://hits.dwyl.com/david96182/ninjemail.svg?style=flat-square&show=unique&color=blue" alt="HitCount Badge">
-  <img src="https://img.shields.io/github/license/david96182/ninjemail?style=flat-square" alt="GitHub License Badge">
+  <img src="https://hits.dwyl.com/david96182/邮箱注册.svg?style=flat-square&show=unique&color=blue" alt="HitCount Badge">
+  <img src="https://img.shields.io/github/license/david96182/邮箱注册?style=flat-square" alt="GitHub License Badge">
   <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square&color=purple" alt="PRs Welcome Badge">
-  <img src="https://img.shields.io/github/actions/workflow/status/david96182/ninjemail/ci.yml?style=flat-square&label=tests" alt="Test status">
-  <img src="https://img.shields.io/codecov/c/github/david96182/ninjemail?style=flat-square" alt="Test coverage Badge">
+  <img src="https://img.shields.io/github/actions/workflow/status/david96182/邮箱注册/ci.yml?style=flat-square&label=tests" alt="Test status">
+  <img src="https://img.shields.io/codecov/c/github/david96182/邮箱注册?style=flat-square" alt="Test coverage Badge">
 </p>
 
 ------
 
-Ninjemail is a Python library designed to streamline the process of creating email accounts across various top email provider services. With Ninjemail, you can automate the creation of email accounts, saving time and effort. It provides an easy-to-use interface for creating accounts with customizable options.
+邮箱注册 is a Python library designed to streamline the process of creating email accounts across various top email provider services. With 邮箱注册, you can automate the creation of email accounts, saving time and effort. It provides an easy-to-use interface for creating accounts with customizable options.
 
 ## Features
 
-- **Automated Account Creation:** Ninjemail streamlines the process of creating email accounts by automating the necessary steps.
-- **Support for Major Email Providers:** Ninjemail supports a wide range of popular email service providers including Gmail, Outlook and Yahoo, giving you flexibility in choosing the provider that suits your needs.
-- **Python Integration:** Ninjemail seamlessly integrates into Python projects, allowing for efficient automation of email account creation.
+- **Automated Account Creation:** 邮箱注册 streamlines the process of creating email accounts by automating the necessary steps.
+- **Support for Major Email Providers:** 邮箱注册 supports a wide range of popular email service providers including Gmail, Outlook and Yahoo, giving you flexibility in choosing the provider that suits your needs.
+- **Python Integration:** 邮箱注册 seamlessly integrates into Python projects, allowing for efficient automation of email account creation.
 - **Auto-generated Account Details:** Generate random account details for username, password, first name, last name, country, and birthdate if not provided, allowing for quick creation of multiple accounts for testing or other purposes.
 - **Customizable Options:** Customize account details such as username, password, first name, last name, country, and birthdate to meet your specific requirements.
-- **Error Handling and Logging:** Ninjemail provides error handling capabilities and logs activities to facilitate debugging and tracking of account creation actions.
-- **Open-Source and Extensible:** Being an open-source project, Ninjemail encourages contributions and allows for further extension and improvement of its functionalities.
-- **Proxy Support:** Ninjemail includes proxy support, giving users the option to use their own proxies for account creation, including support for authenticated proxies. This feature allows for enhanced privacy, security, and flexibility during the email account creation process.
-- **Free Proxy Option:** Additionally, Ninjemail offers an option to automatically retrieve and use free proxies. This feature provides users with a convenient solution for proxy usage, eliminating the need for purchasing or configuring proxies separately.
+- **Error Handling and Logging:** 邮箱注册 provides error handling capabilities and logs activities to facilitate debugging and tracking of account creation actions.
+- **Open-Source and Extensible:** Being an open-source project, 邮箱注册 encourages contributions and allows for further extension and improvement of its functionalities.
+- **Proxy Support:** 邮箱注册 includes proxy support, giving users the option to use their own proxies for account creation, including support for authenticated proxies. This feature allows for enhanced privacy, security, and flexibility during the email account creation process.
+- **Free Proxy Option:** Additionally, 邮箱注册 offers an option to automatically retrieve and use free proxies. This feature provides users with a convenient solution for proxy usage, eliminating the need for purchasing or configuring proxies separately.
 
 ## Installation
 
-To install Ninjemail, you can follow these steps:
+To install 邮箱注册, you can follow these steps:
 
-1. Clone the Ninjemail repository from GitHub using the following command:
+1. Clone the 邮箱注册 repository from GitHub using the following command:
 
    Copy
 
    ```bash
-   git clone https://github.com/david96182/ninjemail.git
+   git clone https://github.com/david96182/邮箱注册.git
    ```
 
 2. Change your current directory to the cloned repository:
@@ -43,7 +43,7 @@ To install Ninjemail, you can follow these steps:
    Copy
 
    ```bash
-   cd ninjemail
+   cd 邮箱注册
    ```
 
 3. Install the required dependencies using pip:
@@ -52,7 +52,7 @@ To install Ninjemail, you can follow these steps:
    pip install -r requirements.txt
    ```
 
-You can then proceed to use Ninjemail as described in the next instructions.
+You can then proceed to use 邮箱注册 as described in the next instructions.
 
 ## Testing
 
@@ -88,18 +88,18 @@ When adding new features or fixing bugs, it's important to include corresponding
 
 ### Importing the Library
 
-To use Ninjemail in your Python script, import the `Ninjemail` class from the `ninjemail` module:
+To use 邮箱注册 in your Python script, import the `邮箱注册` class from the `邮箱注册` module:
 
 ```python
-from ninjemail import Ninjemail
+from 邮箱注册 import 邮箱注册
 ```
 
-### Initializing Ninjemail
+### Initializing 邮箱注册
 
-To create an instance of Ninjemail, call the `Ninjemail` class with optional parameters:
+To create an instance of 邮箱注册, call the `邮箱注册` class with optional parameters:
 
 ```python
-ninja = Ninjemail(
+ninja = 邮箱注册(
     	browser="firefox", 
     	captcha_keys={"capsolver": "YOUR_API_KEY", "nopecha": "YOUR_API_KEY"}, 
     	sms_keys={"service_name": {"user": "USERNAME", "token": "TOKEN"}},
@@ -108,7 +108,7 @@ ninja = Ninjemail(
 )
 ```
 
-The `browser` parameter specifies the browser to be used for automation. The default value is "firefox". Currently, Ninjemail supports **Firefox, Chrome and Undetected Chrome**. The acceptable values for the browser parameter are `firefox`, `chrome` and `undetected-chrome` respectively.
+The `browser` parameter specifies the browser to be used for automation. The default value is "firefox". Currently, 邮箱注册 supports **Firefox, Chrome and Undetected Chrome**. The acceptable values for the browser parameter are `firefox`, `chrome` and `undetected-chrome` respectively.
 
 The `captcha_keys` parameter is a dictionary that contains the **API keys for supported captcha solving services**, based on `config.toml`. The default value is an empty dictionary. You can provide API keys for specific captcha solving services if required. Currently, the following services are supported:
 
@@ -121,13 +121,13 @@ The `sms_keys` parameter is a dictionary that contains the **API key/s for the S
 
 The `proxies` parameter specifies the list of proxy servers to be used for the creation of email accounts. Is optional and can accept either a single proxy server or multiple proxy servers in a list. Each proxy should be provided as a string in the format "http://ip:port," where "ip" represents the IP address of the proxy server and "port" represents the port number. Additionally, support for authentication proxies is available, but exclusively for chrome and undetected-chrome for the moment. The format for authentication proxies remains the same: "http://username:password@ip:port".
 
-The `auto_proxy` parameter is a boolean flag that determines whether Ninjemail should automatically obtain and rotate free proxies during automation tasks. If `auto_proxy` is set to `True`, Ninjemail will handle the process of acquiring and managing free proxies internally.
+The `auto_proxy` parameter is a boolean flag that determines whether 邮箱注册 should automatically obtain and rotate free proxies during automation tasks. If `auto_proxy` is set to `True`, 邮箱注册 will handle the process of acquiring and managing free proxies internally.
 
-Please note that when `auto_proxy` is enabled, Ninjemail will handle the management of proxies, but the availability and reliability of free proxies may vary. It's important to consider the limitations and potential risks associated with using free proxy services.
+Please note that when `auto_proxy` is enabled, 邮箱注册 will handle the management of proxies, but the availability and reliability of free proxies may vary. It's important to consider the limitations and potential risks associated with using free proxy services.
 
 ### Creating Outlook Accounts
 
-To create an Outlook/Hotmail account using Ninjemail, call the `create_outlook_account` method:
+To create an Outlook/Hotmail account using 邮箱注册, call the `create_outlook_account` method:
 
 ```python
 ninja.create_outlook_account(
@@ -162,7 +162,7 @@ The method returns the email and password of the created account.
 
 ### Creating Gmail Accounts
 
-To create a Gmail account using Ninjemail, call the `create_gmail_account` method:
+To create a Gmail account using 邮箱注册, call the `create_gmail_account` method:
 
 ```python
 ninja.create_gmail_account(
@@ -181,7 +181,7 @@ The method returns the email and password of the created gmail account.
 
 ### Creating Yahoo Accounts
 
-To create a Yahoo account using Ninjemail, call the `create_yahoo_account` method:
+To create a Yahoo account using 邮箱注册, call the `create_yahoo_account` method:
 
 ```python
 ninja.create_yahoo_account(
@@ -200,17 +200,17 @@ The method returns the email and password of the created account.
 
 ### Logging
 
-Ninjemail logs its activities to a file named `ninjemail.log` in the `logs` directory. The log file has a format of `[timestamp] [log_level]: log_message`. The log levels are: DEBUG, INFO, WARNING, ERROR, and CRITICAL.
+邮箱注册 logs its activities to a file named `邮箱注册.log` in the `logs` directory. The log file has a format of `[timestamp] [log_level]: log_message`. The log levels are: DEBUG, INFO, WARNING, ERROR, and CRITICAL.
 
 ## Example
 
-Here's an example that shows how to use Ninjemail to create an Outlook account with `undetected-chrome`:
+Here's an example that shows how to use 邮箱注册 to create an Outlook account with `undetected-chrome`:
 
 ```python
-from ninjemail import Ninjemail
+from 邮箱注册 import 邮箱注册
 
 # Replace "YOUR_API_KEY", "USERNAME" and "TOKEN" with your actual keys
-ninja = Ninjemail(
+ninja = 邮箱注册(
     		browser="undetected-chrome",
     		captcha_keys={"capsolver": "YOUR_API_KEY"},
     		sms_keys={"getsmscode": {"user": "USERNAME", "token": "TOKEN"}},
@@ -230,13 +230,13 @@ print(f"Password: {password}")
 
 This will create an Outlook account with the provided information and print the email and password of the created account.
 
-Here's an example that demonstrates how to use Ninjemail to create a Yahoo account without providing any user information. Ninjemail will generate all the necessary data for you, including name, birthdate, etc. This example utilizes smspool as the SMS service, chrome as the web browser and an authenticated proxy:
+Here's an example that demonstrates how to use 邮箱注册 to create a Yahoo account without providing any user information. 邮箱注册 will generate all the necessary data for you, including name, birthdate, etc. This example utilizes smspool as the SMS service, chrome as the web browser and an authenticated proxy:
 
 ```python
-from ninjemail import Ninjemail
+from 邮箱注册 import 邮箱注册
 
 # Replace "YOUR_API_KEY" and "TOKEN" with your actual API keys
-ninja = Ninjemail(
+ninja = 邮箱注册(
     	    browser="chrome",
     		captcha_keys={"nopecha": "YOUR_API_KEY"},
     		sms_keys={"smspool": {"token": "TOKEN"}},
@@ -253,7 +253,7 @@ This will create a Yahoo account with auto-generated information and will print 
 
 ## Supported Providers
 
-Ninjemail currently supports account creation for the following email providers:
+邮箱注册 currently supports account creation for the following email providers:
 
 - Gmail
 - Outlook/Hotmail
@@ -262,23 +262,23 @@ Ninjemail currently supports account creation for the following email providers:
 
 ## Supported SMS Services
 
-Ninjemail currently supports three SMS services providers for phone verification during account creation:
+邮箱注册 currently supports three SMS services providers for phone verification during account creation:
 
 **getsmscode.com**
 
 **Required Data:**
 
-To use getsmscode.com with Ninjemail, you'll need to acquire the following information:
+To use getsmscode.com with 邮箱注册, you'll need to acquire the following information:
 
 - **Username:** Your getsmscode.com username.
 - **Token:** Your API token from getsmscode.com.
 
-**Using getsmscode.com with Ninjemail:**
+**Using getsmscode.com with 邮箱注册:**
 
-1. Include the `sms_keys` argument when initializing the Ninjemail object:
+1. Include the `sms_keys` argument when initializing the 邮箱注册 object:
 
    ```python
-   ninja = Ninjemail(sms_keys={"getsmscode": {"user": "YOUR_USERNAME", 
+   ninja = 邮箱注册(sms_keys={"getsmscode": {"user": "YOUR_USERNAME", 
                               		"token": "YOUR_TOKEN"}})
    ```
    
@@ -288,16 +288,16 @@ To use getsmscode.com with Ninjemail, you'll need to acquire the following infor
 
 **Required Data:**
 
-To use smspool with Ninjemail, you'll need to acquire the following information:
+To use smspool with 邮箱注册, you'll need to acquire the following information:
 
 - **Token:** Your API token from smspool.
 
-**Using smspool.net with Ninjemail:**
+**Using smspool.net with 邮箱注册:**
 
-1. Include the `sms_keys` argument when initializing the Ninjemail object:
+1. Include the `sms_keys` argument when initializing the 邮箱注册 object:
 
    ```python
-   ninja = Ninjemail(sms_keys={"smspool": {"token": "YOUR_TOKEN"}})
+   ninja = 邮箱注册(sms_keys={"smspool": {"token": "YOUR_TOKEN"}})
    ```
 
    Replace `token` with your smspool API key.
@@ -306,29 +306,29 @@ To use smspool with Ninjemail, you'll need to acquire the following information:
 
 **Required Data:**
 
-To use 5sim with Ninjemail, you'll need to acquire the following information:
+To use 5sim with 邮箱注册, you'll need to acquire the following information:
 
 - **Token:** Your API token from 5sim.
 
-**Using 5sim with Ninjemail:**
+**Using 5sim with 邮箱注册:**
 
-1. Include the `sms_keys` argument when initializing the Ninjemail object:
+1. Include the `sms_keys` argument when initializing the 邮箱注册 object:
 
    ```python
-   ninja = Ninjemail(sms_keys={"5sim": {"token": "YOUR_TOKEN"}})
+   ninja = 邮箱注册(sms_keys={"5sim": {"token": "YOUR_TOKEN"}})
    ```
 
    Replace `token` with your 5sim API key.
 
 ## Contribution
 
-Contributions are welcome! If you have ideas for new features, encounter issues, or want to improve Ninjemail, feel free to contribute by opening issues and pull requests.
+Contributions are welcome! If you have ideas for new features, encounter issues, or want to improve 邮箱注册, feel free to contribute by opening issues and pull requests.
 
 ## Community
 
-Join the Ninjemail community to connect with other users, ask questions, and get support. We have a Telegram group where you can actively participate in discussions related to the library.
+Join the 邮箱注册 community to connect with other users, ask questions, and get support. We have a Telegram group where you can actively participate in discussions related to the library.
 
-- Telegram Group: Join the Ninjemail Community on Telegram [here](https://t.me/ninjemail).
+- Telegram Group: Join the 邮箱注册 Community on Telegram [here](https://t.me/邮箱注册).
 
 ## License
 
@@ -348,13 +348,14 @@ Your support is greatly appreciated and helps to ensure the continued improvemen
 
 ## Disclaimer
 
-Ninjemail is provided solely for educational and informational purposes. It is explicitly stated that the intention behind Ninjemail is not to promote or engage in any illegal activities, including hacking or any other unauthorized actions.
+邮箱注册 is provided solely for educational and informational purposes. It is explicitly stated that the intention behind 邮箱注册 is not to promote or engage in any illegal activities, including hacking or any other unauthorized actions.
 
-While using Ninjemail, it is crucial to understand and abide by the terms of service of each email provider you choose to utilize. Creating accounts that violate these terms of service may lead to the suspension or termination of your account by the respective email provider.
+While using 邮箱注册, it is crucial to understand and abide by the terms of service of each email provider you choose to utilize. Creating accounts that violate these terms of service may lead to the suspension or termination of your account by the respective email provider.
 
-To ensure responsible and lawful usage of Ninjemail, please consider the following additional points:
+To ensure responsible and lawful usage of 邮箱注册, please consider the following additional points:
 
-1. Unethical Use: Under no circumstances should Ninjemail be employed for malicious or unethical activities, including but not limited to spamming, phishing, or identity theft. Such actions are strictly prohibited.
-2. Legal Compliance: You are solely responsible for ensuring that your use of Ninjemail is in full compliance with all applicable laws and regulations within your jurisdiction. Any misuse that violates the law is strictly discouraged.
+1. Unethical Use: Under no circumstances should 邮箱注册 be employed for malicious or unethical activities, including but not limited to spamming, phishing, or identity theft. Such actions are strictly prohibited.
+2. Legal Compliance: You are solely responsible for ensuring that your use of 邮箱注册 is in full compliance with all applicable laws and regulations within your jurisdiction. Any misuse that violates the law is strictly discouraged.
 
-By choosing to use Ninjemail, you acknowledge and accept the aforementioned disclaimers and agree to utilize this service only for educational and lawful purposes. Any misuse or illegal activities conducted using Ninjemail are entirely the responsibility of the user, and the developers and providers of Ninjemail bear no liability for such actions.
+By choosing to use 邮箱注册, you acknowledge and accept the aforementioned disclaimers and agree to utilize this service only for educational and lawful purposes. Any misuse or illegal activities conducted using 邮箱注册 are entirely the responsibility of the user, and the developers and providers of 邮箱注册 bear no liability for such actions.
+

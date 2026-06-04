@@ -1,16 +1,16 @@
-# Contributing to Ninjemail
+﻿# Contributing to 邮箱注册
 
-Thank you for considering contributing to Ninjemail! This document provides guidelines on how to contribute to this project.
+Thank you for considering contributing to 邮箱注册! This document provides guidelines on how to contribute to this project.
 
 ### Setting Up Your Development Environment
 
-1. **Fork the Repository**: Go to the [project repository](https://github.com/david96182/ninjemail) and click on the "Fork" button at the top right corner. This will create a copy of the repository in your GitHub account.
+1. **Fork the Repository**: Go to the [project repository](https://github.com/david96182/邮箱注册) and click on the "Fork" button at the top right corner. This will create a copy of the repository in your GitHub account.
 2. **Clone Your Fork**: Clone your forked repository to your local machine. Replace `yourusername` with your GitHub username and `yourproject` with the name of your project.
-3. **Project installation**: Follow the project [installation steps](https://github.com/david96182/ninjemail?tab=readme-ov-file#installation).
+3. **Project installation**: Follow the project [installation steps](https://github.com/david96182/邮箱注册?tab=readme-ov-file#installation).
 
 ## Issue Reporting
 
-If you find a bug or have a feature request, please open an issue on the [issue tracker](https://github.com/david96182/ninjemail/issues). When filing an issue, make sure to:
+If you find a bug or have a feature request, please open an issue on the [issue tracker](https://github.com/david96182/邮箱注册/issues). When filing an issue, make sure to:
 
 - Provide a clear and descriptive title.
 - Describe the issue in as much detail as possible.
@@ -44,8 +44,9 @@ If your contribution includes new features or changes to existing features, plea
 
 ## License
 
-By contributing to Ninjemail, you agree that your contributions will be licensed under its [LICENSE](LICENSE).
+By contributing to 邮箱注册, you agree that your contributions will be licensed under its [LICENSE](LICENSE).
 
 ---
 
 Thank you for contributing to [Your Project Name]! We look forward to your contributions.
+

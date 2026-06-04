@@ -1,5 +1,5 @@
-param(
-    [string]$RepoName = "ninjemail"
+﻿param(
+    [string]$RepoName = "邮箱注册"
 )
 
 $ErrorActionPreference = "Stop"
@@ -97,3 +97,4 @@ Write-Host ""
 Write-Host "========================================"
 Write-Host " Done!"
 Write-Host "========================================"
+
