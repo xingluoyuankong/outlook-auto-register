@@ -1,0 +1,128 @@
+{
+  "html": "<head>\n    <meta charset=\"UTF-8\">\n    <title>Challenge</title>\n</head>\n<body>\n    <div id=\"root\" tabindex=\"-1\"></div>\n    <div id=\"icons-root\"></div>\n    <style id=\"styles-root\" nonce=\"\">\n    </style>\n    <script nonce=\"\">\n        window.onerror = function (msg, url, lineNo, columnNo, error) {\n            window.parent.postMessage(\n                {\n                    type: 'onerror',\n                    payload: {\n                        msg: msg,\n                        url: url,\n                        lineNo: lineNo,\n                        columnNo: columnNo,\n                        errorStack: error ? error.stack : ''\n                    }\n                },\n                '*'\n            );\n            return false;\n        }\n    </script>\n    <script nonce=\"\">\n        !function(){\"use strict\";var e;var t=\"undefined\"==typeof document?void 0:document,n=!!t&&\"content\"in t.createElement(\"template\"),i=!!t&&t.createRange&&\"createContextualFragment\"in t.createRange();function r(r){return r=r.trim(),n?function(e){var n=t.createElement(\"template\");return n.innerHTML=e,n.content.childNodes[0]}(r):i?function(n){return e||(e=t.createRange()).selectNode(t.body),e.createContextualFragment(n).childNodes[0]}(r):function(e){var n=t.createElement(\"body\");return n.innerHTML=e,n.childNodes[0]}(r)}function o(e,t){var n,i,r=e.nodeName,o=t.nodeName;return r===o||(n=r.charCodeAt(0),i=o.charCodeAt(0),n<=90&&i>=97?r===o.toUpperCase():i<=90&&n>=97&&o===r.toUpperCase())}function a(e,t,n){e[n]!==t[n]&&(e[n]=t[n],e[n]?e.setAttribute(n,\"\"):e.removeAttribute(n))}var d={OPTION:function(e,t){var n=e.parentNode;if(n){var i=n.nodeName.toUpperCase();\"OPTGROUP\"===i&&(i=(n=n.parentNode)&&n.nodeName.toUpperCase()),\"SELECT\"!==i||n.hasAttribute(\"multiple\")||(e.hasAttribute(\"selected\")&&!t.selected&&(e.setAttribute(\"selected\",\"selected\"),e.removeAttribute(\"selected\")),n.selectedIndex=-1)}a(e,t,\"selected\")},INPUT:function(e,t){a(e,t,\"checked\"),a(e,t,\"disabled\"),e.value!==t.value&&(e.value=t.value),t.hasAttribute(\"value\")||e.removeAttribute(\"value\")},TEXTAREA:function(e,t){var n=t.value;e.value!==n&&(e.value=n);var i=e.firstChild;if(i){var r=i.nodeValue;if(r==n||!n&&r==e.placeholder)return;i.nodeValue=n}},SELECT:function(e,t){if(!t.hasAttribute(\"multiple\")){for(var n,i,r=-1,o=0,a=e.firstChild;a;)if(\"OPTGROUP\"===(i=a.nodeName&&a.nodeName.toUpperCase()))a=(n=a).firstChild;else{if(\"OPTION\"===i){if(a.hasAttribute(\"selected\")){r=o;break}o++}!(a=a.nextSibling)&&n&&(a=n.nextSibling,n=null)}e.selectedIndex=r}}};function u(){}function l(e){if(e)return e.getAttribute&&e.getAttribute(\"id\")||e.id}var c=function(e){return function(n,i,a){if(a||(a={}),\"string\"==typeof i)if(\"#document\"===n.nodeName||\"HTML\"===n.nodeName||\"BODY\"===n.nodeName){var c=i;(i=t.createElement(\"html\")).innerHTML=c}else i=r(i);var f=a.getNodeKey||l,s=a.onBeforeNodeAdded||u,v=a.onNodeAdded||u,m=a.onBeforeElUpdated||u,p=a.onElUpdated||u,h=a.onBeforeNodeDiscarded||u,N=a.onNodeDiscarded||u,b=a.onBeforeElChildrenUpdated||u,g=!0===a.childrenOnly,y=Object.create(null),C=[];function A(e){C.push(e)}function T(e,t,n){!1!==h(e)&&(t&&t.removeChild(e),N(e),function e(t,n){if(1===t.nodeType)for(var i=t.firstChild;i;){var r=void 0;n&&(r=f(i))?A(r):(N(i),i.firstChild&&e(i,n)),i=i.nextSibling}}(e,n))}function S(e){v(e);for(var t=e.firstChild;t;){var n=t.nextSibling,i=f(t);if(i){var r=y[i];r&&o(t,r)?(t.parentNode.replaceChild(r,t),w(r,t)):S(t)}else S(t);t=n}}function w(n,i,r){var a=f(i);if(a&&delete y[a],!r){if(!1===m(n,i))return;if(e(n,i),p(n),!1===b(n,i))return}\"TEXTAREA\"!==n.nodeName?function(e,n){var i,r,a,u,l,c=n.firstChild,v=e.firstChild;e:for(;c;){for(u=c.nextSibling,i=f(c);v;){if(a=v.nextSibling,c.isSameNode&&c.isSameNode(v)){c=u,v=a;continue e}r=f(v);var m=v.nodeType,p=void 0;if(m===c.nodeType&&(1===m?(i?i!==r&&((l=y[i])?a===l?p=!1:(e.insertBefore(l,v),r?A(r):T(v,e,!0),v=l):p=!1):r&&(p=!1),(p=!1!==p&&o(v,c))&&w(v,c)):3!==m&&8!=m||(p=!0,v.nodeValue!==c.nodeValue&&(v.nodeValue=c.nodeValue))),p){c=u,v=a;continue e}r?A(r):T(v,e,!0),v=a}if(i&&(l=y[i])&&o(l,c))e.appendChild(l),w(l,c);else{var h=s(c);!1!==h&&(h&&(c=h),c.actualize&&(c=c.actualize(e.ownerDocument||t)),e.appendChild(c),S(c))}c=u,v=a}!function(e,t,n){for(;t;){var i=t.nextSibling;(n=f(t))?A(n):T(t,e,!0),t=i}}(e,v,r);var N=d[e.nodeName];N&&N(e,n)}(n,i):d.TEXTAREA(n,i)}!function e(t){if(1===t.nodeType||11===t.nodeType)for(var n=t.firstChild;n;){var i=f(n);i&&(y[i]=n),e(n),n=n.nextSibling}}(n);var E,R,x=n,U=x.nodeType,L=i.nodeType;if(!g)if(1===U)1===L?o(n,i)||(N(n),x=function(e,t){for(var n=e.firstChild;n;){var i=n.nextSibling;t.appendChild(n),n=i}return t}(n,(E=i.nodeName,(R=i.namespaceURI)&&\"http://www.w3.org/1999/xhtml\"!==R?t.createElementNS(R,E):t.createElement(E)))):x=i;else if(3===U||8===U){if(L===U)return x.nodeValue!==i.nodeValue&&(x.nodeValue=i.nodeValue),x;x=i}if(x===i)N(n);else{if(i.isSameNode&&i.isSameNode(x))return;if(w(x,i,g),C)for(var O=0,I=C.length;O<I;O++){var P=y[C[O]];P&&T(P,P.parentNode,!1)}}return!g&&x!==n&&n.parentNode&&(x.actualize&&(x=x.actualize(n.ownerDocument||t)),n.parentNode.replaceChild(x,n)),x}}((function(e,t){var n,i,r,o,a=t.attributes;if(11!==t.nodeType&&11!==e.nodeType){for(var d=a.length-1;d>=0;d--)i=(n=a[d]).name,r=n.namespaceURI,o=n.value,r?(i=n.localName||i,e.getAttributeNS(r,i)!==o&&(\"xmlns\"===n.prefix&&(i=n.name),e.setAttributeNS(r,i,o))):e.getAttribute(i)!==o&&e.setAttribute(i,o);for(var u=e.attributes,l=u.length-1;l>=0;l--)i=(n=u[l]).name,(r=n.namespaceURI)?(i=n.localName||i,t.hasAttributeNS(r,i)||e.removeAttributeNS(r,i)):t.hasAttribute(i)||e.removeAttribute(i)}})),f=document.querySelector(\"#root\");function s(e,t){window.parent.postMessage({type:e,payload:t},\"*\")}function v(e){return e&&e.id||\"\"}window.addEventListener(\"keydown\",(function(e){s(\"event\",{type:\"keydown\",id:v(e.target),key:e.key})})),window.addEventListener(\"input\",(function(e){s(\"event\",{type:\"input\",id:v(e.target),value:e.target.value})})),window.addEventListener(\"click\",(function(e){s(\"event\",{type:\"click\",id:v(e.target)})}));var m={width:0,height:0},p=!1;function h(){const e=f.getBoundingClientRect();m.width===e.width&&m.height===e.height||(m.width=e.width,m.height=e.height,s(\"rect\",m)),requestAnimationFrame(h)}window.addEventListener(\"message\",(function(e){if(e.source===window.parent){var t=e.data,n=t&&t.type,i=t&&t.payload;if(t&&n&&i&&(\"load\"===n&&(document.querySelector(\"#styles-root\").innerHTML=i.stylesRoot||\"\",document.querySelector(\"#icons-root\").innerHTML=i.iconsRoot||\"\",void 0!==i.bodyClassName&&(document.body.className=i.bodyClassName),p=!i.hasSizeObserver,s(\"onload\")),\"html\"===n&&(c(f,i,{onBeforeNodeAdded:function(e){return(!e||\"SCRIPT\"!==e.nodeName)&&e},onBeforeElUpdated:function(e,t){return!(e&&\"SCRIPT\"===e.nodeName||t&&\"SCRIPT\"===t.nodeName)&&!e.isEqualNode(t)}}),p||(p=!0,h())),\"focus\"===n&&i.selector)){const e=f.querySelector(i.selector);e&&e.focus&&e.focus()}}})),s(\"init\")}();\n        (self.webpackChunkabuse=self.webpackChunkabuse||[]).push([[760],{595:(t,e,n)=>{\"use strict\";n.d(e,{z:()=>p});var r=function(){var t,e,n=!1;function r(n,r){var o=t[(e[n]+e[r])%255];return 0!==n&&0!==r||(o=0),o}var o,i,a,u,s=!1;function c(){function c(n){var r,o,i;for(o=i=function(n){var r=t[255-e[n]];return 0===n&&(r=0),r}(n),r=0;r<4;r++)i^=o=255&(o<<1|o>>>7);return i^=99}n||function(){t=[],e=[];var r,o,i=1;for(r=0;r<255;r++)t[r]=i,o=128&i,i<<=1,i&=255,128===o&&(i^=27),i^=t[r],e[t[r]]=r;t[255]=t[0],e[0]=0,n=!0}(),o=[],i=[],a=[[],[],[],[]],u=[[],[],[],[]];for(var f=0;f<256;f++){var l=c(f);o[f]=l,i[l]=f,a[0][f]=r(2,l)<<24|l<<16|l<<8|r(3,l),u[0][l]=r(14,f)<<24|r(9,f)<<16|r(13,f)<<8|r(11,f);for(var h=1;h<4;h++)a[h][f]=a[h-1][f]>>>8|a[h-1][f]<<24,u[h][l]=u[h-1][l]>>>8|u[h-1][l]<<24}s=!0}var f=function(t,e){s||c();var n=new Uint32Array(e);n.set(o,512),n.set(i,768);for(var r=0;r<4;r++)n.set(a[r],4096+1024*r>>2),n.set(u[r],8192+1024*r>>2);var f=function(t,e,n){\"use asm\";var r=0,o=0,i=0,a=0,u=0,s=0,c=0,f=0,l=0,h=0,d=0,p=0,y=0,m=0,g=0,v=0,b=0,w=0,A=0,E=0,L=0;var B=new t.Uint32Array(n),k=new t.Uint8Array(n);function I(t,e,n,u,s,c,f,l){t=t|0;e=e|0;n=n|0;u=u|0;s=s|0;c=c|0;f=f|0;l=l|0;var h=0,d=0,p=0,y=0,m=0,g=0,v=0,b=0;h=n|0x400,d=n|0x800,p=n|0xc00;s=s^B[(t|0)>>2],c=c^B[(t|4)>>2],f=f^B[(t|8)>>2],l=l^B[(t|12)>>2];for(b=16;(b|0)<=u<<4;b=b+16|0){y=B[(n|s>>22&1020)>>2]^B[(h|c>>14&1020)>>2]^B[(d|f>>6&1020)>>2]^B[(p|l<<2&1020)>>2]^B[(t|b|0)>>2],m=B[(n|c>>22&1020)>>2]^B[(h|f>>14&1020)>>2]^B[(d|l>>6&1020)>>2]^B[(p|s<<2&1020)>>2]^B[(t|b|4)>>2],g=B[(n|f>>22&1020)>>2]^B[(h|l>>14&1020)>>2]^B[(d|s>>6&1020)>>2]^B[(p|c<<2&1020)>>2]^B[(t|b|8)>>2],v=B[(n|l>>22&1020)>>2]^B[(h|s>>14&1020)>>2]^B[(d|c>>6&1020)>>2]^B[(p|f<<2&1020)>>2]^B[(t|b|12)>>2];s=y,c=m,f=g,l=v}r=B[(e|s>>22&1020)>>2]<<24^B[(e|c>>14&1020)>>2]<<16^B[(e|f>>6&1020)>>2]<<8^B[(e|l<<2&1020)>>2]^B[(t|b|0)>>2],o=B[(e|c>>22&1020)>>2]<<24^B[(e|f>>14&1020)>>2]<<16^B[(e|l>>6&1020)>>2]<<8^B[(e|s<<2&1020)>>2]^B[(t|b|4)>>2],i=B[(e|f>>22&1020)>>2]<<24^B[(e|l>>14&1020)>>2]<<16^B[(e|s>>6&1020)>>2]<<8^B[(e|c<<2&1020)>>2]^B[(t|b|8)>>2],a=B[(e|l>>22&1020)>>2]<<24^B[(e|s>>14&1020)>>2]<<16^B[(e|c>>6&1020)>>2]<<8^B[(e|f<<2&1020)>>2]^B[(t|b|12)>>2]}function C(t,e,n,r){t=t|0;e=e|0;n=n|0;r=r|0;I(0x0000,0x0800,0x1000,L,t,e,n,r)}function R(t,e,n,r){t=t|0;e=e|0;n=n|0;r=r|0;var i=0;I(0x0400,0x0c00,0x2000,L,t,r,n,e);i=o,o=a,a=i}function S(t,e,n,l){t=t|0;e=e|0;n=n|0;l=l|0;I(0x0000,0x0800,0x1000,L,u^t,s^e,c^n,f^l);u=r,s=o,c=i,f=a}function V(t,e,n,l){t=t|0;e=e|0;n=n|0;l=l|0;var h=0;I(0x0400,0x0c00,0x2000,L,t,l,n,e);h=o,o=a,a=h;r=r^u,o=o^s,i=i^c,a=a^f;u=t,s=e,c=n,f=l}function x(t,e,n,l){t=t|0;e=e|0;n=n|0;l=l|0;I(0x0000,0x0800,0x1000,L,u,s,c,f);u=r=r^t,s=o=o^e,c=i=i^n,f=a=a^l}function _(t,e,n,l){t=t|0;e=e|0;n=n|0;l=l|0;I(0x0000,0x0800,0x1000,L,u,s,c,f);r=r^t,o=o^e,i=i^n,a=a^l;u=t,s=e,c=n,f=l}function U(t,e,n,l){t=t|0;e=e|0;n=n|0;l=l|0;I(0x0000,0x0800,0x1000,L,u,s,c,f);u=r,s=o,c=i,f=a;r=r^t,o=o^e,i=i^n,a=a^l}function W(t,e,n,u){t=t|0;e=e|0;n=n|0;u=u|0;I(0x0000,0x0800,0x1000,L,l,h,d,p);p=~v&p|v&p+1;d=~g&d|g&d+((p|0)==0);h=~m&h|m&h+((d|0)==0);",
+  "body": "\n    <div id=\"root\" tabindex=\"-1\"></div>\n    <div id=\"icons-root\"></div>\n    <style id=\"styles-root\" nonce=\"\">\n    </style>\n    <script nonce=\"\">\n        window.onerror = function (msg, url, lineNo, columnNo, error) {\n            window.parent.postMessage(\n                {\n                    type: 'onerror',\n                    payload: {\n                        msg: msg,\n                        url: url,\n                        lineNo: lineNo,\n                        columnNo: columnNo,\n                        errorStack: error ? error.stack : ''\n                    }\n                },\n                '*'\n            );\n            return false;\n        }\n    </script>\n    <script nonce=\"\">\n        !function(){\"use strict\";var e;var t=\"undefined\"==typeof document?void 0:document,n=!!t&&\"content\"in t.createElement(\"template\"),i=!!t&&t.createRange&&\"createContextualFragment\"in t.createRange();function r(r){return r=r.trim(),n?function(e){var n=t.createElement(\"template\");return n.innerHTML=e,n.content.childNodes[0]}(r):i?function(n){return e||(e=t.createRange()).selectNode(t.body),e.createContextualFragment(n).childNodes[0]}(r):function(e){var n=t.createElement(\"body\");return n.innerHTML=e,n.childNodes[0]}(r)}function o(e,t){var n,i,r=e.nodeName,o=t.nodeName;return r===o||(n=r.charCodeAt(0),i=o.charCodeAt(0),n<=90&&i>=97?r===o.toUpperCase():i<=90&&n>=97&&o===r.toUpperCase())}function a(e,t,n){e[n]!==t[n]&&(e[n]=t[n],e[n]?e.setAttribute(n,\"\"):e.removeAttribute(n))}var d={OPTION:function(e,t){var n=e.parentNode;if(n){var i=n.nodeName.toUpperCase();\"OPTGROUP\"===i&&(i=(n=n.parentNode)&&n.nodeName.toUpperCase()),\"SELECT\"!==i||n.hasAttribute(\"multiple\")||(e.hasAttribute(\"selected\")&&!t.selected&&(e.setAttribute(\"selected\",\"selected\"),e.removeAttribute(\"selected\")),n.selectedIndex=-1)}a(e,t,\"selected\")},INPUT:function(e,t){a(e,t,\"checked\"),a(e,t,\"disabled\"),e.value!==t.value&&(e.value=t.value),t.hasAttribute(\"value\")||e.removeAttribute(\"value\")},TEXTAREA:function(e,t){var n=t.value;e.value!==n&&(e.value=n);var i=e.firstChild;if(i){var r=i.nodeValue;if(r==n||!n&&r==e.placeholder)return;i.nodeValue=n}},SELECT:function(e,t){if(!t.hasAttribute(\"multiple\")){for(var n,i,r=-1,o=0,a=e.firstChild;a;)if(\"OPTGROUP\"===(i=a.nodeName&&a.nodeName.toUpperCase()))a=(n=a).firstChild;else{if(\"OPTION\"===i){if(a.hasAttribute(\"selected\")){r=o;break}o++}!(a=a.nextSibling)&&n&&(a=n.nextSibling,n=null)}e.selectedIndex=r}}};function u(){}function l(e){if(e)return e.getAttribute&&e.getAttribute(\"id\")||e.id}var c=function(e){return function(n,i,a){if(a||(a={}),\"string\"==typeof i)if(\"#document\"===n.nodeName||\"HTML\"===n.nodeName||\"BODY\"===n.nodeName){var c=i;(i=t.createElement(\"html\")).innerHTML=c}else i=r(i);var f=a.getNodeKey||l,s=a.onBeforeNodeAdded||u,v=a.onNodeAdded||u,m=a.onBeforeElUpdated||u,p=a.onElUpdated||u,h=a.onBeforeNodeDiscarded||u,N=a.onNodeDiscarded||u,b=a.onBeforeElChildrenUpdated||u,g=!0===a.childrenOnly,y=Object.create(null),C=[];function A(e){C.push(e)}function T(e,t,n){!1!==h(e)&&(t&&t.removeChild(e),N(e),function e(t,n){if(1===t.nodeType)for(var i=t.firstChild;i;){var r=void 0;n&&(r=f(i))?A(r):(N(i),i.firstChild&&e(i,n)),i=i.nextSibling}}(e,n))}function S(e){v(e);for(var t=e.firstChild;t;){var n=t.nextSibling,i=f(t);if(i){var r=y[i];r&&o(t,r)?(t.parentNode.replaceChild(r,t),w(r,t)):S(t)}else S(t);t=n}}function w(n,i,r){var a=f(i);if(a&&delete y[a],!r){if(!1===m(n,i))return;if(e(n,i),p(n),!1===b(n,i))return}\"TEXTAREA\"!==n.nodeName?function(e,n){var i,r,a,u,l,c=n.firstChild,v=e.firstChild;e:for(;c;){for(u=c.nextSibling,i=f(c);v;){if(a=v.nextSibling,c.isSameNode&&c.isSameNode(v)){c=u,v=a;continue e}r=f(v);var m=v.nodeType,p=void 0;if(m===c.nodeType&&(1===m?(i?i!==r&&((l=y[i])?a===l?p=!1:(e.insertBefore(l,v),r?A(r):T(v,e,!0),v=l):p=!1):r&&(p=!1),(p=!1!==p&&o(v,c))&&w(v,c)):3!==m&&8!=m||(p=!0,v.nodeValue!==c.nodeValue&&(v.nodeValue=c.nodeValue))),p){c=u,v=a;continue e}r?A(r):T(v,e,!0),v=a}if(i&&(l=y[i])&&o(l,c))e.appendChild(l),w(l,c);else{var h=s(c);!1!==h&&(h&&(c=h),c.actualize&&(c=c.actualize(e.ownerDocument||t)),e.appendChild(c),S(c))}c=u,v=a}!function(e,t,n){for(;t;){var i=t.nextSibling;(n=f(t))?A(n):T(t,e,!0),t=i}}(e,v,r);var N=d[e.nodeName];N&&N(e,n)}(n,i):d.TEXTAREA(n,i)}!function e(t){if(1===t.nodeType||11===t.nodeType)for(var n=t.firstChild;n;){var i=f(n);i&&(y[i]=n),e(n),n=n.nextSibling}}(n);var E,R,x=n,U=x.nodeType,L=i.nodeType;if(!g)if(1===U)1===L?o(n,i)||(N(n),x=function(e,t){for(var n=e.firstChild;n;){var i=n.nextSibling;t.appendChild(n),n=i}return t}(n,(E=i.nodeName,(R=i.namespaceURI)&&\"http://www.w3.org/1999/xhtml\"!==R?t.createElementNS(R,E):t.createElement(E)))):x=i;else if(3===U||8===U){if(L===U)return x.nodeValue!==i.nodeValue&&(x.nodeValue=i.nodeValue),x;x=i}if(x===i)N(n);else{if(i.isSameNode&&i.isSameNode(x))return;if(w(x,i,g),C)for(var O=0,I=C.length;O<I;O++){var P=y[C[O]];P&&T(P,P.parentNode,!1)}}return!g&&x!==n&&n.parentNode&&(x.actualize&&(x=x.actualize(n.ownerDocument||t)),n.parentNode.replaceChild",
+  "title": "Challenge",
+  "bodyText": "",
+  "allElements": [
+    {
+      "tag": "HTML",
+      "cls": "",
+      "text": "Challenge\n\n\n    \n    \n    \n    \n    \n   ",
+      "id": "",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 1266,
+      "height": 8
+    },
+    {
+      "tag": "HEAD",
+      "cls": "",
+      "text": "Challenge",
+      "id": "",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 0,
+      "height": 0
+    },
+    {
+      "tag": "META",
+      "cls": "",
+      "text": "",
+      "id": "",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 0,
+      "height": 0
+    },
+    {
+      "tag": "TITLE",
+      "cls": "",
+      "text": "Challenge",
+      "id": "",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 0,
+      "height": 0
+    },
+    {
+      "tag": "BODY",
+      "cls": "",
+      "text": "window.onerror = function (msg, url, lin",
+      "id": "",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 1250,
+      "height": 0
+    },
+    {
+      "tag": "DIV",
+      "cls": "",
+      "text": "",
+      "id": "root",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 1250,
+      "height": 0
+    },
+    {
+      "tag": "DIV",
+      "cls": "",
+      "text": "",
+      "id": "icons-root",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 1250,
+      "height": 0
+    },
+    {
+      "tag": "STYLE",
+      "cls": "",
+      "text": "",
+      "id": "styles-root",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 0,
+      "height": 0
+    },
+    {
+      "tag": "SCRIPT",
+      "cls": "",
+      "text": "window.onerror = function (msg, url, lin",
+      "id": "",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 0,
+      "height": 0
+    },
+    {
+      "tag": "SCRIPT",
+      "cls": "",
+      "text": "!function(){\"use strict\";var e;var t=\"un",
+      "id": "",
+      "type": "",
+      "src": "",
+      "href": "",
+      "value": "",
+      "width": 0,
+      "height": 0
+    }
+  ]
+}

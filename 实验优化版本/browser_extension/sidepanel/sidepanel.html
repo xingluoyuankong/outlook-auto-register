@@ -1,0 +1,281 @@
+﻿<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>邮箱注册 流程助手</title>
+  <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+  <header class="app-hero">
+    <div class="hero-copy">
+      <div class="hero-kicker">邮箱注册 AUTOMATION</div>
+      <h1>邮箱注册 流程助手</h1>
+      <p id="statusText">待命</p>
+    </div>
+    <span id="statusBadge" class="badge">待命</span>
+  </header>
+
+  <div class="proxy-status-panel" id="proxyStatusPanel">
+    <div class="proxy-status-header">
+      <span class="proxy-status-icon" id="proxyStatusIcon">🔴</span>
+      <div>
+        <div class="proxy-status-title" id="proxyStatusTitle">未使用代理</div>
+        <div class="proxy-status-subtitle">注册前请确认出口 IP 与代理状态</div>
+      </div>
+    </div>
+    <div class="proxy-status-details" id="proxyStatusDetails"></div>
+  </div>
+
+  <main class="app-shell">
+    <section class="panel control-panel priority-panel">
+      <div class="panel-head prominent-head">
+        <div>
+          <div class="section-eyebrow">CONTROL CENTER</div>
+          <h2>操作与服务</h2>
+        </div>
+        <span id="updatedValue" class="mini">未更新</span>
+      </div>
+
+      <div class="form-grid two-col">
+        <div class="field-stack compact">
+          <label for="providerSelect" class="field-label">注册方式</label>
+          <select id="providerSelect" aria-label="选择注册方式">
+            <option value="outlook">Outlook 邮箱</option>
+            <option value="hotmail">Hotmail 邮箱</option>
+            <option value="gmail">Gmail 邮箱</option>
+            <option value="yahoo">Yahoo 邮箱</option>
+            <option value="proton">Proton Mail</option>
+            <option value="gmx">GMX Mail</option>
+            <option value="aol">AOL Mail</option>
+            <option value="zoho">Zoho Mail</option>
+            <option value="yandex">Yandex Mail</option>
+            <option value="mailcom">Mail.com</option>
+            <option value="icloud">iCloud Mail</option>
+            <option value="mailru">Mail.ru</option>
+            <option value="naver">Naver Mail</option>
+            <option value="kakao">Daum/Kakao Mail</option>
+            <option value="netease163">163 Mail</option>
+            <option value="netease126">126 Mail</option>
+            <option value="neteaseyeah">Yeah.net Mail</option>
+            <option value="qq">QQ Mail</option>
+            <option value="sina">Sina Mail</option>
+            <option value="sohu">Sohu Mail</option>
+            <option value="tutanota">Tutanota</option>
+          </select>
+        </div>
+        <div class="registration-count-row field-card">
+          <label for="registrationCountInput" class="field-label">注册个数</label>
+          <input id="registrationCountInput" type="number" min="1" max="100" value="1" />
+          <span id="registrationProgressValue" class="mini count-pill">0/0</span>
+        </div>
+      </div>
+
+      <div class="primary-actions">
+        <button id="continueBtn" type="button" class="btn-primary btn-xl">开始注册</button>
+        <button id="stopBtn" type="button" class="btn-danger btn-xl">停止执行</button>
+      </div>
+
+      <div class="secondary-actions">
+        <button id="resumeBtn" type="button">继续执行</button>
+        <button id="recoverLoginBtn" type="button">回到登录页继续</button>
+      </div>
+
+      <div class="tools-actions">
+        <button id="scanBtn" type="button" class="btn-sm">扫描前页</button>
+        <button id="focusBtn" type="button" class="btn-sm">聚焦步骤</button>
+        <button id="refreshCredBtn" type="button" class="btn-sm">刷新状态</button>
+      </div>
+
+      <div id="serviceGrid" class="service-grid"></div>
+    </section>
+
+    <section class="panel summary-panel compact-summary">
+      <div class="panel-head prominent-head">
+        <div>
+          <div class="section-eyebrow">LIVE STATUS</div>
+          <h2>当前状态</h2>
+        </div>
+        <span id="activeStepValue" class="mini step-highlight">无</span>
+      </div>
+      <div class="summary-compact-row">
+        <span class="sc-item"><span class="sc-label">方式</span> <strong id="providerValue">Outlook</strong></span>
+        <span class="sc-item"><span class="sc-label">阻碍</span> <strong id="blockerValue">无</strong></span>
+        <span class="sc-item"><span class="sc-label">下一步</span> <span id="nextValue">扫描当前页</span></span>
+      </div>
+      <div class="summary-meta-row">
+        <span id="postStateValue">验证后：无 / 最终：无</span>
+        <span id="titleValue" class="meta-sep">无标题</span>
+        <span id="urlValue" class="mono meta-url">无 URL</span>
+        <span id="evidenceValue">无证据</span>
+      </div>
+    </section>
+
+    <section class="workspace-grid">
+      <section class="panel credential-panel">
+        <div class="panel-head prominent-head">
+          <div>
+            <div class="section-eyebrow">ACCOUNT OUTPUT</div>
+            <h2>凭证信息</h2>
+          </div>
+          <span id="credStatusValue" class="mini">未设置</span>
+        </div>
+        <div id="credInfoValue" class="credential-summary mono">当前：无</div>
+        <div class="credential-manual-grid">
+          <label class="credential-field" for="manualEmailInput">
+            <span>邮箱</span>
+            <input id="manualEmailInput" type="email" placeholder="当前已注册邮箱" autocomplete="off">
+            <button class="copy-field-btn" type="button" data-copy-input="manualEmailInput">复制</button>
+          </label>
+          <label class="credential-field" for="manualPasswordInput">
+            <span>密码</span>
+            <input id="manualPasswordInput" type="text" placeholder="当前邮箱密码" autocomplete="off">
+            <button class="copy-field-btn" type="button" data-copy-input="manualPasswordInput">复制</button>
+          </label>
+          <label class="credential-field" for="manualClientIdInput">
+            <span>Client ID</span>
+            <input id="manualClientIdInput" type="text" placeholder="留空使用默认值" autocomplete="off">
+            <button class="copy-field-btn" type="button" data-copy-input="manualClientIdInput">复制</button>
+          </label>
+          <label class="credential-field" for="manualRefreshTokenInput">
+            <span>RT</span>
+            <input id="manualRefreshTokenInput" type="text" placeholder="获取成功后自动显示" autocomplete="off">
+            <button class="copy-field-btn" type="button" data-copy-input="manualRefreshTokenInput">复制</button>
+          </label>
+        </div>
+        <div class="provider-actions credential-actions">
+          <button id="exportCredBtn" type="button" class="btn-primary">获取四凭证</button>
+          <button id="exportFourCredBtn" type="button">导出四凭证</button>
+          <button id="copyFourCredBtn" type="button">复制四凭证</button>
+          <button id="exportThreeCredBtn" type="button">复制三凭证</button>
+          <button id="validateCredBtn" type="button">校验凭证</button>
+        </div>
+      </section>
+
+      <details class="panel steps-panel" open>
+        <summary class="panel-summary">
+          <span><b>步骤链路</b></span>
+          <span id="flowModeValue" class="mini">Outlook / Hotmail 独立流程</span>
+        </summary>
+        <div class="panel-body">
+          <div id="flowProviderTabs" class="flow-provider-tabs"></div>
+          <div id="stepsList" class="steps"></div>
+          <div id="flowHintValue" class="line flow-hint">选择邮箱后只显示对应步骤链路。</div>
+        </div>
+      </details>
+    </section>
+
+    <details class="panel challenge-panel" open>
+      <summary class="panel-summary">
+        <span><b>挑战详情</b></span>
+      </summary>
+      <div class="panel-body challenge-body">
+        <div id="challengeList" class="challenge-list"></div>
+        <div id="challengeEmpty" class="empty">暂无挑战</div>
+      </div>
+    </details>
+
+    <details class="panel sms-panel">
+      <summary class="panel-summary">
+        <span><b>免费接码服务</b></span>
+        <span id="smsDiagStatusValue" class="mini">未刷新</span>
+      </summary>
+      <div class="panel-body">
+        <details class="sms-diag-details">
+          <summary>服务检测明细</summary>
+          <div id="smsDiagList" class="sms-diag-list"></div>
+        </details>
+        <div class="sms-use-panel">
+          <div class="sms-use-grid">
+            <select id="smsProviderSelect" aria-label="选择免费接码服务">
+              <option value="receive_sms_live">receive_sms_live</option><option value="quackr">quackr</option><option value="anonymsms">anonymsms</option><option value="sms24_me">sms24_me</option><option value="receive_sms_cc">receive_sms_cc</option><option value="sms_receive_free">sms_receive_free</option><option value="numtapper">numtapper</option><option value="receivesms_it">receivesms_it</option><option value="temporary_phone_number_io">temporary_phone_number_io</option><option value="freephonenum">freephonenum</option><option value="receive_sms_online_info">receive_sms_online_info</option><option value="sms_online_co">sms_online_co</option><option value="mytrashmobile">mytrashmobile</option><option value="receive_sms_io">receive_sms_io</option><option value="receive_sms_free_cc">receive_sms_free_cc</option><option value="temporary_phone_number_com">temporary_phone_number_com</option><option value="receivefreesms_net">receivefreesms_net</option><option value="freeonlinephone_org">freeonlinephone_org</option><option value="receivesms_net">receivesms_net</option><option value="receivesmsonline_net">receivesmsonline_net</option><option value="sms24_info">sms24_info</option>
+            </select>
+            <input id="smsCountryInput" type="text" value="USA" aria-label="国家">
+            <button id="loadSmsNumbersBtn" type="button">加载号码</button>
+          </div>
+          <select id="smsNumberSelect" aria-label="选择接码号码"></select>
+          <div class="sms-use-actions">
+            <button id="copySmsNumberBtn" type="button">复制号码</button>
+            <button id="refreshSmsMessagesBtn" type="button">刷新短信</button>
+            <button id="copySmsCodeBtn" type="button">复制验证码</button>
+            <button id="refreshSmsDiagBtn" class="small-btn" type="button">刷新服务</button>
+          </div>
+          <div id="smsUseStatusValue" class="line">未加载号码</div>
+          <div id="smsCodeValue" class="sms-code-value">验证码：无</div>
+          <div id="smsMessagesList" class="sms-messages-list"></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="panel proxy-panel" open>
+      <summary class="panel-summary">
+        <span><b>代理管理</b></span>
+        <span id="proxyStatusValue" class="mini">未加载</span>
+      </summary>
+      <div class="panel-body">
+        <div class="proxy-count-row">
+          <span class="sc-item"><span class="sc-label">当前</span> <strong id="proxyCountValue">0</strong> 个代理</span>
+          <span class="sc-item"><span class="sc-label">稳定</span> <strong id="proxyStableCountValue">0</strong></span>
+          <label class="proxy-auto-label"><input id="proxyAutoCheckbox" type="checkbox"> 自动代理</label>
+        </div>
+        <div class="field-stack">
+          <label for="proxyTextarea" class="field-label">代理列表（每行一个，支持 http/socks5 格式）</label>
+          <textarea id="proxyTextarea" class="proxy-textarea" rows="5" placeholder="http://ip:port&#10;socks5://ip:port&#10;http://user:pass@ip:port&#10;&#10;可从文件导入或直接粘贴"></textarea>
+        </div>
+        <input id="proxyFileInput" type="file" accept=".txt,.csv,.conf,.list" style="display:none">
+        <div class="proxy-actions-row roomy-actions">
+          <button id="proxyImportFileBtn" type="button">📄 导入文件</button>
+          <button id="proxyPasteBtn" type="button">📋 粘贴代理</button>
+          <button id="proxyLoadBtn" type="button" class="btn-primary">⬇ 加载后端</button>
+          <button id="proxySaveBtn" type="button" class="btn-primary">⬆ 保存到后端</button>
+          <button id="proxyCheckBtn" type="button">🔍 检测</button>
+          <input id="proxyCheckLimitInput" type="number" min="1" max="500" value="20" title="每次检测数量">
+          <button id="proxyClearBtn" type="button" class="btn-danger">清空</button>
+        </div>
+        <div id="proxyResultValue" class="proxy-result">就绪</div>
+        <div id="proxyCardList" class="proxy-card-list" style="display:none;">
+          <div class="proxy-card-header"><span class="proxy-card-title">可用代理</span><span id="proxyCardCount" class="proxy-card-count">0</span></div>
+          <div id="proxyCardItems" class="proxy-card-items"></div>
+        </div>
+      </div>
+    </details>
+
+    <section class="panel backend-panel">
+      <div class="panel-head prominent-head">
+        <div>
+          <div class="section-eyebrow">LOCAL BACKEND</div>
+          <h2>自定义目录后台</h2>
+        </div>
+        <span id="webUiHealthValue" class="mini">未检测</span>
+      </div>
+      <div class="line">用于把四凭证写入本地绝对路径。</div>
+      <div class="field-stack"><label for="webUiBaseUrlInput" class="field-label">后台地址</label><input id="webUiBaseUrlInput" type="text" placeholder="例如 http://127.0.0.1:17860"></div>
+      <div class="field-stack"><label for="credentialDirInput" class="field-label">导出目标路径</label><input id="credentialDirInput" type="text" placeholder="留空默认保存到插件根目录\邮箱凭证"></div>
+      <div class="provider-actions backend-actions">
+        <button id="saveWebUiBaseUrlBtn" type="button">保存地址</button><button id="openBackendBtn" type="button">打开后台</button><button id="checkBackendBtn" type="button">检测后台</button><button id="openWebUiBtn" type="button">后台主页</button><button id="saveCredDirBtn" type="button">保存路径</button><button id="openCredentialDirBtn" type="button">打开目录</button>
+      </div>
+    </section>
+
+    <section class="panel logs-panel log-dock">
+      <div class="panel-head prominent-head">
+        <div>
+          <div class="section-eyebrow">EXECUTION LOG</div>
+          <h2>运行日志</h2>
+        </div>
+        <div class="log-toolbar">
+          <span id="logCountValue" class="mini">0 条</span>
+          <button id="logModeSummaryBtn" type="button" class="small-btn">中文摘要</button>
+          <button id="logModeRawBtn" type="button" class="small-btn">原始日志</button>
+          <button id="copyLogsBtn" type="button" class="small-btn">复制日志</button>
+          <button id="clearBtn" type="button" class="small-btn">清空日志</button>
+        </div>
+      </div>
+      <textarea id="logsText" class="logs-text" readonly spellcheck="false"></textarea>
+    </section>
+  </main>
+
+  <script src="../shared/flow-state.js"></script>
+  <script src="sidepanel.js"></script>
+</body>
+</html>
+

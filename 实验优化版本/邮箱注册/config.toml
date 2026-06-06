@@ -1,0 +1,16 @@
+# config.toml
+CAPTCHA_SERVICES_SUPPORTED = ["capsolver", "nopecha"]
+DEFAULT_CAPTCHA_SERVICE = "nopecha"
+SMS_SERVICES_SUPPORTED = ["getsmscode", "smspool", "5sim", "textbee", "smsgate"]
+DEFAULT_SMS_SERVICE = "smspool"
+DIAGNOSTIC_CAPTCHA_SERVICES = ["nopecha", "ddddocr", "ocr_space", "capsolver", "capmonster", "anti_captcha", "2captcha", "yescaptcha", "buster", "local_solver"]
+DIAGNOSTIC_SMS_SERVICES = ["receive_sms_live", "quackr", "anonymsms", "sms24_me", "receive_sms_cc", "sms_receive_free", "numtapper", "receivesms_it", "temporary_phone_number_io", "freephonenum", "receive_sms_online_info", "sms_online_co", "mytrashmobile", "textbee", "smsgate", "vendel", "getsmscode", "smspool", "5sim"]
+SUPPORTED_BROWSERS = ['firefox', 'chrome', 'edge', 'undetected-chrome']
+
+[[SUPPORTED_SOLVERS_BY_EMAIL]]
+email_service = "outlook"
+solvers = ["capsolver", "nopecha"]
+
+[[SUPPORTED_SOLVERS_BY_EMAIL]]
+email_service = "yahoo"
+solvers = ["capsolver", "nopecha"]

@@ -1,0 +1,71 @@
+{
+  "elements": [
+    {
+      "tag": "IFRAME",
+      "id": "",
+      "src": "https://account-api.proton.me/challenge/v4/html?Type=0&Name=unauth&Lang=zh-CN&Dir=ltr",
+      "width": 300,
+      "height": 150,
+      "class": "absolute top-custom left-custom"
+    },
+    {
+      "tag": "INPUT",
+      "id": "username",
+      "src": "",
+      "width": 215,
+      "height": 34,
+      "class": "input-element w-full email-input-field"
+    },
+    {
+      "tag": "IFRAME",
+      "id": "",
+      "src": "https://account-api.proton.me/challenge/v4/html?Type=0&Name=email&Lang=zh-CN&Dir=ltr",
+      "width": 544,
+      "height": 80.46875,
+      "class": "challenge-width-increase h-custom"
+    },
+    {
+      "tag": "INPUT",
+      "id": "password",
+      "src": "",
+      "width": 494.3333435058594,
+      "height": 34,
+      "class": "input-element w-full"
+    },
+    {
+      "tag": "INPUT",
+      "id": "password-confirm",
+      "src": "",
+      "width": 494.3333435058594,
+      "height": 34,
+      "class": "input-element w-full"
+    },
+    {
+      "tag": "IFRAME",
+      "id": "",
+      "src": "https://account-api.proton.me/core/v4/captcha?Token=aYIPIhQ1QVKSIuxzUZyG2PUS&ForceWebMessaging=1",
+      "width": 672,
+      "height": 600,
+      "class": "w-full h-custom"
+    }
+  ],
+  "iframes": [
+    {
+      "src": "https://account-api.proton.me/challenge/v4/html?Type=0&Name=unauth&Lang=zh-CN&Dir=ltr",
+      "width": 300,
+      "height": 150
+    },
+    {
+      "src": "https://account-api.proton.me/challenge/v4/html?Type=0&Name=email&Lang=zh-CN&Dir=ltr",
+      "width": 544,
+      "height": 80.46875
+    },
+    {
+      "src": "https://account-api.proton.me/core/v4/captcha?Token=aYIPIhQ1QVKSIuxzUZyG2PUS&ForceWebMessaging=1",
+      "width": 672,
+      "height": 600
+    }
+  ],
+  "bodyText": "简体中文\n隐私至上的加密电子邮件服务\n创建 Proton 账户\n使用您已有的邮箱地址\n更多信息：使用 Proton Mail 和 Proton Calendar 还需注册 Proton 邮箱地址\n密码\n立即开始使用 Proton Mail\n加载中\n已经有账户了？登录\n继续使用即表示您同意我们的 服务条款 和 隐私政策。\n唯一具有以下功能的电子邮件服务：\n内置加密\n受瑞士隐私法保护\n邮箱别名\n高级安全功能\n包含日历、密码管理器、文件储存以及 VPN\n加入 1 亿多选择 Proton 的用户行列，确保安全上网\nProton - Privacy by default\n需要帮助？\nHuman Verification\n关闭\nCAPTCHA\n邮箱验证\n为了防止垃圾邮件和滥用行为，请进行人机验证。",
+  "html": "<head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta http-equiv=\"x-dns-prefetch-control\" content=\"off\"><base href=\"/\"><link rel=\"canonical\" href=\"https://account.proton.me/signup\"><title>创建 Proton 账户 | 重获您的隐私掌控权</title><meta name=\"description\" content=\"创建一个 Proton 账户，仅需一次登录即可使用所有加密的 Proton 服务，例如 Proton Mail、Drive、Calendar 等。立即获取免费的 Proton 账户。\"><meta property=\"og:title\" content=\"创建 Proton 账户 | 重获您的隐私掌控权\"><meta property=\"og:description\" content=\"创建一个 Proton 账户，仅需一次登录即可使用所有加密的 Proton 服务，例如 Proton Mail、Drive、Calendar 等。立即获取免费的 Proton 账户。\"><meta property=\"og:url\" content=\"https://account.proton.me/signup\"><meta property=\"og:type\" content=\"website\"><meta property=\"og:image\" content=\"https://account.proton.me/assets/proton-og-image.png\"><meta property=\"og:image:alt\" content=\"The shiny Proton logo\"><meta property=\"og:image:type\" content=\"image/png\"><meta property=\"og:image:width\" content=\"1200\"><meta property=\"og:image:height\" content=\"630\"><meta property=\"og:locale\" content=\"en_US\"><meta name=\"twitter:card\" content=\"summary_large_image\"><meta name=\"twitter:site\" content=\"@ProtonMail\"><meta name=\"twitter:title\" content=\"创建 Proton 账户 | 重获您的隐私掌控权\"><meta name=\"twitter:description\" content=\"创建一个 Proton 账户，仅需一次登录即可使用所有加密的 Proton 服务，例如 Proton Mail、Drive、Calendar 等。立即获取免费的 Proton 账户。\"><meta name=\"twitter:image\" content=\"https://account.proton.me/assets/proton-og-image.png\"><meta name=\"twitter:image:alt\" content=\"The shiny Proton logo\"><meta name=\"google\" content=\"notranslate\"><link rel=\"alternate\" hreflang=\"en-US\" href=\"https://account.proton.me/signup\"><link rel=\"alternate\" hreflang=\"ar-SA\" href=\"https://account.proton.me/ar/signup\"><link rel=\"alternate\" hreflang=\"be-BY\" href=\"https://account.proton.me/be/signup\"><link rel=\"alternate\" hreflang=\"ca-ES\" href=\"https://account.proton.me/ca/signup\"><link rel=\"alternate\" hreflang=\"cs-CZ\" href=\"https://account.proton.me/cs/signup\"><link rel=\"alternate\" hreflang=\"da-DK\" href=\"https://account.proton.me/da/signup\"><link rel=\"alternate\" hreflang=\"de-DE\" href=\"https://account.proton.me/de/signup\"><link rel=\"alternate\" hreflang=\"el-GR\" href=\"https://account.proton.me/el/signup\"><link rel=\"alternate\" hreflang=\"es-ES\" href=\"https://account.proton.me/es-es/signup\"><link rel=\"alternate\" hreflang=\"es\" href=\"https://account.proton.me/es/signup\"><link rel=\"alternate\" hreflang=\"fi-FI\" href=\"https://account.proton.me/fi/signup\"><link rel=\"alternate\" hreflang=\"fil-PH\" href=\"https://account.proton.me/fil/signup\"><link rel=\"alternate\" hreflang=\"fr-FR\" href=\"https://account.proton.me/fr/signup\"><link rel=\"alternate\" hreflang=\"hi-IN\" href=\"https://account.proton.me/hi/signup\"><link rel=\"alternate\" hreflang=\"hr-HR\" href=\"https://account.proton.me/hr/signup\"><link rel=\"alternate\" hreflang=\"hu-HU\" href=\"https://account.proton.me/hu/signup\"><link rel=\"alternate\" hreflang=\"id-ID\" href=\"https://account.proton.me/id/signup\"><link rel=\"alternate\" hreflang=\"it-IT\" href=\"https://account.proton.me/it"
+}

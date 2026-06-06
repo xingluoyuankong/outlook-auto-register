@@ -1,0 +1,19 @@
+
+{
+    "version": "1.0.0",
+    "manifest_version": 3,
+    "name": "Chrome Proxy",
+    "permissions": [
+        "Proxy",
+        "Tabs",
+        "unlimitedStorage",
+        "Storage",
+        "<all_urls>",
+        "webRequest",
+        "webRequestBlocking"
+    ],
+    "background": {
+        "scripts": ["background.js"]
+    },
+    "minimum_chrome_version":"76.0.0"
+}

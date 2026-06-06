@@ -1,0 +1,661 @@
+import os, sys, webbrowser, threading, random, string, re
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
+from pydantic import BaseModel
+from typing import List, Optional
+from sqlalchemy.orm import Session
+import httpx
+
+# --------------- Verification Code Extraction ---------------
+def extract_verification_code(html_body: str, text_body: str, subject: str) -> str:
+    """从邮件内容中提取验证码"""
+    # 合并所有文本内容
+    text = subject + " " + text_body
+    # 移除HTML标签
+    if html_body:
+        import re as regex
+        clean_html = regex.sub(r'<[^>]+>', ' ', html_body)
+        text += " " + clean_html
+    
+    # 常见验证码模式（按优先级排序）
+    patterns = [
+        # 数字验证码（4-8位）
+        r'(?:验证码|code|Code|CODE|验证代码|安全码|security code)[：:\s]*(\d{4,8})',
+        r'(?:is|is:|：)\s*(\d{4,8})',
+        r'(?:Your.*?code.*?is|您的.*?验证码.*?是)[：:\s]*(\d{4,8})',
+        # 纯数字验证码（在特定上下文中）
+        r'(?:使用|use|enter|输入)\s*(\d{4,8})\s*(?:进行|to|for|作为)',
+        # 通用数字模式（4-6位，可能是验证码）
+        r'\b(\d{4,6})\b(?:\s*(?:是|is|为|code|验证码))',
+        # 字母数字混合验证码
+        r'(?:验证码|code|Code)[：:\s]*([A-Za-z0-9]{4,8})',
+        # 更宽松的数字模式
+        r'\b(\d{4,8})\b'
+    ]
+    
+    for pattern in patterns:
+        matches = re.findall(pattern, text, re.IGNORECASE)
+        if matches:
+            # 返回第一个匹配的验证码
+            return matches[0]
+    
+    return ""
+
+from database import engine, get_db, Base
+from models import Account, Group
+
+Base.metadata.create_all(bind=engine)
+
+PORT = 18080
+
+@asynccontextmanager
+async def lifespan(app_instance):
+    """服务器启动后自动打开浏览器"""
+    def open_browser():
+        import time
+        time.sleep(0.8)
+        webbrowser.open(f"http://localhost:{PORT}")
+    threading.Thread(target=open_browser, daemon=True).start()
+    yield
+
+app = FastAPI(title="令牌取件系统", lifespan=lifespan)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
+
+@app.middleware("http")
+async def add_charset_middleware(request, call_next):
+    response = await call_next(request)
+    ct = response.headers.get("content-type", "")
+    if "text/" in ct and "charset" not in ct:
+        response.headers["content-type"] = ct + "; charset=utf-8"
+    elif "application/json" in ct and "charset" not in ct:
+        response.headers["content-type"] = ct + "; charset=utf-8"
+    return response
+
+# --------------- Schemas ---------------
+class ImportItem(BaseModel):
+    email: str
+    pwd: str = ""
+    client_id: str = ""
+    token: str = ""
+    raw: str = ""
+    group_name: str = "默认分组"
+
+class ImportRequest(BaseModel):
+    items: List[ImportItem]
+
+class MoveRequest(BaseModel):
+    ids: List[int]
+    target_group: str
+
+class GroupCreate(BaseModel):
+    name: str
+
+class GroupRename(BaseModel):
+    old_name: str
+    new_name: str
+
+class FetchMailRequest(BaseModel):
+    email: str
+    client_id: str
+    token: str
+    limit: int = 1
+
+# --------------- Accounts API ---------------
+@app.get("/api/accounts")
+def list_accounts(group: str = "All", search: str = "", db: Session = Depends(get_db)):
+    q = db.query(Account)
+    if group != "All":
+        q = q.filter(Account.group_name == group)
+    if search:
+        q = q.filter(Account.email.contains(search))
+    return [{"id": a.id, "email": a.email, "pwd": a.pwd, "client_id": a.client_id,
+             "token": a.token, "raw": a.raw, "group": a.group_name} for a in q.all()]
+
+@app.post("/api/accounts/import")
+def import_accounts(req: ImportRequest, db: Session = Depends(get_db)):
+    added = 0
+    for item in req.items:
+        acc = Account(email=item.email, pwd=item.pwd, client_id=item.client_id,
+                      token=item.token, raw=item.raw, group_name=item.group_name)
+        db.add(acc)
+        added += 1
+    db.commit()
+    return {"status": "ok", "added": added}
+
+@app.delete("/api/accounts/{acc_id}")
+def delete_account(acc_id: int, db: Session = Depends(get_db)):
+    acc = db.query(Account).get(acc_id)
+    if not acc:
+        raise HTTPException(404, "Not found")
+    db.delete(acc)
+    db.commit()
+    return {"status": "ok"}
+
+@app.post("/api/accounts/batch_delete")
+def batch_delete(ids: List[int], db: Session = Depends(get_db)):
+    db.query(Account).filter(Account.id.in_(ids)).delete(synchronize_session=False)
+    db.commit()
+    return {"status": "ok", "deleted": len(ids)}
+
+@app.post("/api/accounts/move")
+def move_accounts(req: MoveRequest, db: Session = Depends(get_db)):
+    db.query(Account).filter(Account.id.in_(req.ids)).update(
+        {Account.group_name: req.target_group}, synchronize_session=False)
+    db.commit()
+    return {"status": "ok", "moved": len(req.ids)}
+
+@app.post("/api/accounts/export")
+def export_accounts(ids: List[int], type: str = "acc_pwd", db: Session = Depends(get_db)):
+    accs = db.query(Account).filter(Account.id.in_(ids)).all()
+    lines = []
+    for a in accs:
+        if type == "acc":
+            lines.append(a.email)
+        elif type == "acc_pwd":
+            lines.append(f"{a.email}----{a.pwd}")
+        elif type == "raw":
+            lines.append(a.raw or f"{a.email}----{a.pwd}----{a.client_id}----{a.token}")
+    return {"status": "ok", "data": "\n".join(lines)}
+
+# --------------- Groups API ---------------
+@app.get("/api/groups")
+def list_groups(db: Session = Depends(get_db)):
+    groups = db.query(Group).all()
+    if not groups:
+        db.add(Group(name="默认分组"))
+        db.commit()
+        groups = db.query(Group).all()
+    return [g.name for g in groups]
+
+@app.post("/api/groups")
+def create_group(req: GroupCreate, db: Session = Depends(get_db)):
+    if db.query(Group).filter(Group.name == req.name).first():
+        raise HTTPException(400, "分组已存在")
+    db.add(Group(name=req.name))
+    db.commit()
+    return {"status": "ok"}
+
+@app.put("/api/groups")
+def rename_group(req: GroupRename, db: Session = Depends(get_db)):
+    g = db.query(Group).filter(Group.name == req.old_name).first()
+    if not g:
+        raise HTTPException(404, "分组不存在")
+    g.name = req.new_name
+    db.query(Account).filter(Account.group_name == req.old_name).update(
+        {Account.group_name: req.new_name}, synchronize_session=False)
+    db.commit()
+    return {"status": "ok"}
+
+@app.delete("/api/groups/{name}")
+def delete_group(name: str, db: Session = Depends(get_db)):
+    db.query(Account).filter(Account.group_name == name).delete(synchronize_session=False)
+    db.query(Group).filter(Group.name == name).delete(synchronize_session=False)
+    if not db.query(Group).first():
+        db.add(Group(name="默认分组"))
+    db.commit()
+    return {"status": "ok"}
+
+# --------------- Mail Fetch API ---------------
+@app.post("/api/fetch_by_token")
+async def fetch_by_token(req: FetchMailRequest):
+    try:
+        token_data = {
+            "client_id": req.client_id,
+            "scope": "https://graph.microsoft.com/.default offline_access",
+            "refresh_token": req.token,
+            "grant_type": "refresh_token",
+        }
+        async with httpx.AsyncClient(timeout=30) as client:
+            token_resp = await client.post(
+                "https://login.microsoftonline.com/consumers/oauth2/v2.0/token",
+                data=token_data
+            )
+            if token_resp.status_code != 200:
+                return {"status": "error", "message": f"Token刷新失败: {token_resp.text[:200]}"}
+            access_token = token_resp.json().get("access_token")
+            if not access_token:
+                return {"status": "error", "message": "未获取到access_token"}
+
+            headers = {"Authorization": f"Bearer {access_token}"}
+            params = {"$top": req.limit, "$orderby": "receivedDateTime desc"}
+            mail_resp = await client.get(
+                "https://graph.microsoft.com/v1.0/me/messages",
+                headers=headers, params=params
+            )
+            if mail_resp.status_code != 200:
+                return {"status": "error", "message": f"邮件获取失败: {mail_resp.text[:200]}"}
+
+            messages = mail_resp.json().get("value", [])
+            emails = []
+            for msg in messages:
+                from_info = msg.get("from", {}).get("emailAddress", {})
+                body = msg.get("body", {})
+                html_body = body.get("contentType") == "html" and body.get("content", "") or ""
+                text_body = body.get("contentType") == "text" and body.get("content", "") or ""
+                subject = msg.get("subject", "(无主题)")
+                
+                # 提取验证码
+                verification_code = extract_verification_code(html_body, text_body, subject)
+                
+                emails.append({
+                    "subject": subject,
+                    "from": f"{from_info.get('name', '')} <{from_info.get('address', '')}>",
+                    "date": msg.get("receivedDateTime", ""),
+                    "html_body": html_body,
+                    "text_body": text_body,
+                    "verification_code": verification_code,
+                })
+            return {"status": "ok", "emails": emails}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
+
+# --------------- Merge Files API ---------------
+import glob as glob_mod
+
+class MergeFilesRequest(BaseModel):
+    directory: str
+    exclude_dirs: List[str] = ["已经使用"]
+    dedup: bool = True
+    separator: str = "----"
+
+@app.post("/api/merge_files")
+def merge_files(req: MergeFilesRequest):
+    """扫描目录下所有 .txt 凭证文件，返回解析后的记录"""
+    import logging
+    logging.warning(f"[MERGE] Received: directory={req.directory!r}, exclude={req.exclude_dirs}, dedup={req.dedup}")
+    base_dir = req.directory
+    if not os.path.isdir(base_dir):
+        return {"status": "error", "message": f"目录不存在: {base_dir}"}
+
+    separator = req.separator
+    exclude_set = set(req.exclude_dirs)
+    records = []
+    errors = []
+
+    # 扫描根目录 + 子目录
+    for root, dirs, files in os.walk(base_dir):
+        # 计算相对路径，判断是否在排除目录中
+        rel = os.path.relpath(root, base_dir)
+        top_dir = rel.split(os.sep)[0] if rel != "." else "."
+        if top_dir in exclude_set:
+            continue
+
+        for fname in sorted(files):
+            if not fname.endswith(".txt"):
+                continue
+            fpath = os.path.join(root, fname)
+            try:
+                with open(fpath, "r", encoding="utf-8") as f:
+                    content = f.read().strip()
+            except Exception:
+                try:
+                    with open(fpath, "r", encoding="gbk") as f:
+                        content = f.read().strip()
+                except Exception:
+                    errors.append(f"无法读取: {fname}")
+                    continue
+
+            if separator not in content:
+                errors.append(f"格式不符: {fname}")
+                continue
+
+            parts = content.split(separator)
+            if len(parts) < 4:
+                errors.append(f"字段不足: {fname} ({len(parts)}字段)")
+                continue
+
+            email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', parts[0])
+            if not email_match:
+                errors.append(f"邮箱格式错误: {fname}")
+                continue
+
+            records.append({
+                "email": email_match.group(0),
+                "pwd": parts[1].strip(),
+                "client_id": parts[2].strip(),
+                "token": parts[3].strip(),
+                "raw": content,
+                "source": fname,
+            })
+
+    # 去重
+    dup_count = 0
+    if req.dedup:
+        seen = set()
+        unique = []
+        for rec in records:
+            key = rec["email"].lower()
+            if key in seen:
+                dup_count += 1
+                continue
+            seen.add(key)
+            unique.append(rec)
+        records = unique
+
+    return {
+        "status": "ok",
+        "records": records,
+        "total_scanned": len(records) + dup_count,
+        "after_dedup": len(records),
+        "duplicates": dup_count,
+        "errors": errors,
+    }
+
+class AliasGenRequest(BaseModel):
+    ids: Optional[List[int]] = None       # 从数据库选账号
+    text: Optional[str] = None             # 或手动粘贴文本
+    group: Optional[str] = None            # 或按分组选
+    count: int = 5                         # 每个邮箱生成数量
+    keep_fields: bool = True               # 保留原字段
+    stagger: bool = True                   # 错开顺序
+
+# --------------- Alias Generation API ---------------
+EMAIL_RE = re.compile(r'([a-zA-Z0-9._%+-]+)@([a-zA-Z0-9.-]+\.[a-zA-Z]{2,})', re.I)
+SUPPORTED_DOMAIN_RE = re.compile(r'^(hotmail|outlook)\.[a-z]{2,}(?:\.[a-z]{2,})*$', re.I)
+DELIMITER = "----"
+
+def _random_letters(n=6):
+    return ''.join(random.choices(string.ascii_letters, k=n))
+
+def _generate_aliases_for_email(base_email, count, used_set):
+    atIndex = base_email.index('@')
+    local = base_email[:atIndex].split('+')[0]
+    domain = base_email[atIndex+1:]
+    aliases = []
+    for _ in range(count):
+        alias = ""
+        for _ in range(20):
+            suffix = _random_letters(6)
+            alias = f"{local}+{suffix}@{domain}"
+            if alias.lower() not in used_set:
+                break
+        used_set.add(alias.lower())
+        aliases.append(alias)
+    return aliases
+
+@app.post("/api/alias/generate")
+def generate_aliases(req: AliasGenRequest, db: Session = Depends(get_db)):
+    lines = []
+    # 收集输入行
+    if req.ids:
+        accs = db.query(Account).filter(Account.id.in_(req.ids)).all()
+        for a in accs:
+            raw = a.raw or f"{a.email}----{a.pwd}----{a.client_id}----{a.token}"
+            lines.append(raw)
+    elif req.group:
+        accs = db.query(Account).filter(Account.group_name == req.group).all()
+        for a in accs:
+            raw = a.raw or f"{a.email}----{a.pwd}----{a.client_id}----{a.token}"
+            lines.append(raw)
+    elif req.text:
+        lines = req.text.strip().split('\n')
+    else:
+        return {"status": "error", "message": "未提供输入源"}
+
+    count = max(1, min(req.count, 50))
+    used_set = set()
+    outputs = []
+    valid = 0
+    skipped = 0
+    records = []  # 每条记录的别名列表
+
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line:
+            continue
+        parts = line.split(DELIMITER)
+        m = EMAIL_RE.search(parts[0] if parts else line)
+        if not m:
+            skipped += 1
+            continue
+        local_base = m.group(1).split('+')[0]
+        domain = m.group(2).lower()
+        if not SUPPORTED_DOMAIN_RE.match(domain):
+            skipped += 1
+            continue
+        base_email = f"{local_base}@{domain}"
+        aliases = _generate_aliases_for_email(base_email, count, used_set)
+        valid += 1
+        records.append({"aliases": aliases, "parts": parts})
+
+    # 错开顺序输出
+    if req.stagger:
+        for i in range(count):
+            for rec in records:
+                if i < len(rec["aliases"]):
+                    alias = rec["aliases"][i]
+                    if req.keep_fields and len(rec["parts"]) > 1:
+                        outputs.append(DELIMITER.join([alias] + rec["parts"][1:]))
+                    else:
+                        outputs.append(alias)
+    else:
+        for rec in records:
+            for alias in rec["aliases"]:
+                if req.keep_fields and len(rec["parts"]) > 1:
+                    outputs.append(DELIMITER.join([alias] + rec["parts"][1:]))
+                else:
+                    outputs.append(alias)
+
+    return {
+        "status": "ok",
+        "data": "\n".join(outputs),
+        "total": len(outputs),
+        "valid": valid,
+        "skipped": skipped
+    }
+
+# --------------- Parse import text ---------------
+@app.post("/api/parse_import")
+def parse_import_text(text: str = "", group: str = "默认分组"):
+    lines = text.strip().split("\n")
+    items = []
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        parts = line.split("----")
+        if len(parts) >= 4:
+            email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', line)
+            if email_match:
+                items.append({
+                    "email": email_match.group(0),
+                    "pwd": parts[1].strip(),
+                    "client_id": parts[2].strip(),
+                    "token": parts[3].strip(),
+                    "raw": line,
+                    "group_name": group
+                })
+    return {"status": "ok", "items": items, "count": len(items)}
+
+# --------------- Static files ---------------
+FRONTEND_DIR = os.path.dirname(os.path.abspath(__file__))
+
+@app.get("/")
+def serve_index():
+    return FileResponse(
+        os.path.join(FRONTEND_DIR, "integrated_frontend.html"),
+        media_type="text/html; charset=utf-8"
+    )
+
+# --------------- Batch Registration ---------------
+import logging
+import threading
+
+logger = logging.getLogger("registration")
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+BATCH_REG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "\u6279\u91cf\u6ce8\u518c\u90ae\u7bb1")
+os.makedirs(BATCH_REG_DIR, exist_ok=True)
+
+REG_STATE = {"running": False, "provider": "", "count": 0, "completed": 0,
+             "success": 0, "failed": 0, "current": "", "errors": [], "results": [], "stop_flag": False}
+REG_LOCK = threading.Lock()
+
+def save_credential_file(email, password, client_id="", refresh_token=""):
+    safe = re.sub(r'[^a-zA-Z0-9@._-]', '_', email.lower()).strip('._-')
+    path = os.path.join(BATCH_REG_DIR, f"{safe}.txt")
+    line = f"{email}----{password}----{client_id or '14d82eec-204b-4c2f-b7e8-296a70dab67e'}----{refresh_token}"
+    with open(path, 'w', encoding='utf-8') as f:
+        f.write(line + '\n')
+    return path
+
+def auto_import_to_library(email, password, client_id="", refresh_token="", group="\u6279\u91cf\u6ce8\u518c"):
+    db = SessionLocal()
+    try:
+        if db.query(Account).filter(Account.email == email).first():
+            return None
+        acc = Account(email=email, pwd=password,
+                      client_id=client_id or "14d82eec-204b-4c2f-b7e8-296a70dab67e",
+                      token=refresh_token, raw=f"{email}----{password}----{client_id}----{refresh_token}",
+                      group_name=group)
+        db.add(acc)
+        if not db.query(Group).filter(Group.name == group).first():
+            db.add(Group(name=group))
+        db.commit()
+        return acc.id
+    finally:
+        db.close()
+
+def run_registration_task(provider, count, password, group_name, proxy_list,
+                          captcha_key, sms_config, browser, visible):
+    global REG_STATE
+    with REG_LOCK:
+        REG_STATE.update(running=True, provider=provider, count=count, completed=0,
+                         success=0, failed=0, errors=[], results=[], stop_flag=False)
+    try:
+        from ninjemail.ninjemail_manager import Ninjemail
+        captcha_keys = {}
+        if captcha_key:
+            captcha_keys[captcha_key.get("service", "nopecha")] = captcha_key.get("key", "")
+        sms_keys = {}
+        if sms_config:
+            sms_keys[sms_config.get("service", "textbee")] = sms_config
+        proxies = [p.strip() for p in (proxy_list or "").splitlines() if p.strip()] or None
+        ninja = Ninjemail(browser=browser or "undetected-chrome", captcha_keys=captcha_keys,
+                          sms_keys=sms_keys, proxies=proxies, webdriver_visible=visible)
+        for i in range(count):
+            with REG_LOCK:
+                if REG_STATE["stop_flag"]:
+                    break
+                REG_STATE["current"] = f"\u6b63\u5728\u521b\u5efa\u7b2c {i+1}/{count} \u4e2a..."
+            try:
+                result = ninja.create_account(provider, password=password or "",
+                                              hotmail=(provider == "hotmail"),
+                                              myyahoo=(provider == "myyahoo"),
+                                              use_proxy=bool(proxies))
+                if isinstance(result, tuple):
+                    email, pwd = result
+                elif isinstance(result, dict):
+                    email = result.get("email", "")
+                    pwd = result.get("password", "")
+                else:
+                    raise ValueError(f"Unexpected result: {result}")
+                cred_path = save_credential_file(email, pwd)
+                acc_id = auto_import_to_library(email, pwd, group=group_name)
+                with REG_LOCK:
+                    REG_STATE["success"] += 1
+                    REG_STATE["results"].append({"email": email, "password": pwd, "status": "success",
+                                                  "credential_path": cred_path, "account_id": acc_id})
+                logger.info(f"[REG] \u2705 {i+1}/{count} created: {email}")
+            except Exception as exc:
+                with REG_LOCK:
+                    REG_STATE["failed"] += 1
+                    REG_STATE["errors"].append(f"#{i+1}: {str(exc)[:300]}")
+                logger.error(f"[REG] \u274c {i+1}/{count} failed: {exc}")
+            with REG_LOCK:
+                REG_STATE["completed"] += 1
+    except Exception as exc:
+        logger.error(f"[REG] Fatal: {exc}")
+    finally:
+        with REG_LOCK:
+            REG_STATE["running"] = False
+            REG_STATE["current"] = ""
+
+@app.post("/api/register/start")
+def register_start(provider: str = "outlook", count: int = 1, password: str = "",
+                   group_name: str = "\u6279\u91cf\u6ce8\u518c", proxy_list: str = "",
+                   captcha_key: str = "", sms_config: str = "",
+                   browser: str = "undetected-chrome", visible: bool = True):
+    with REG_LOCK:
+        if REG_STATE["running"]:
+            return {"status": "error", "message": "\u6ce8\u518c\u4efb\u52a1\u8fd0\u884c\u4e2d"}
+    import json as _json
+    ck = _json.loads(captcha_key) if captcha_key else None
+    sc = _json.loads(sms_config) if sms_config else None
+    t = threading.Thread(target=run_registration_task, args=(
+        provider, count, password, group_name, proxy_list, ck, sc, browser, visible), daemon=True)
+    t.start()
+    return {"status": "ok", "message": "\u6ce8\u518c\u4efb\u52a1\u5df2\u542f\u52a8"}
+
+@app.get("/api/register/status")
+def register_status():
+    with REG_LOCK:
+        return dict(REG_STATE)
+
+@app.post("/api/register/stop")
+def register_stop():
+    with REG_LOCK:
+        REG_STATE["stop_flag"] = True
+    return {"status": "ok"}
+
+@app.get("/api/stats")
+def get_stats(db: Session = Depends(get_db)):
+    total = db.query(Account).count()
+    groups = db.query(Group).all()
+    gc = {g.name: db.query(Account).filter(Account.group_name == g.name).count() for g in groups}
+    batch_count = len([f for f in os.listdir(BATCH_REG_DIR) if f.endswith(".txt")]) if os.path.isdir(BATCH_REG_DIR) else 0
+    return {"total_accounts": total, "total_groups": len(groups), "group_counts": gc, "batch_dir_count": batch_count}
+
+@app.post("/api/batch_import_dir")
+def batch_import_dir(group: str = "\u6279\u91cf\u6ce8\u518c", db: Session = Depends(get_db)):
+    if not os.path.isdir(BATCH_REG_DIR):
+        return {"status": "error", "message": "\u76ee\u5f55\u4e0d\u5b58\u5728"}
+    added = 0
+    skipped = 0
+    for fname in os.listdir(BATCH_REG_DIR):
+        if not fname.endswith(".txt"):
+            continue
+        fpath = os.path.join(BATCH_REG_DIR, fname)
+        try:
+            with open(fpath, "r", encoding="utf-8") as f:
+                content = f.read().strip()
+        except Exception:
+            continue
+        parts = content.split("----")
+        if len(parts) < 2:
+            continue
+        email_match = re.search(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', parts[0])
+        if not email_match:
+            continue
+        email = email_match.group(0)
+        if db.query(Account).filter(Account.email == email).first():
+            skipped += 1
+            continue
+        acc = Account(email=email, pwd=parts[1].strip(),
+                      client_id=parts[2].strip() if len(parts) > 2 else "14d82eec-204b-4c2f-b7e8-296a70dab67e",
+                      token=parts[3].strip() if len(parts) > 3 else "",
+                      raw=content, group_name=group)
+        db.add(acc)
+        added += 1
+    if added > 0:
+        if not db.query(Group).filter(Group.name == group).first():
+            db.add(Group(name=group))
+        db.commit()
+    return {"status": "ok", "added": added, "skipped": skipped}
+
+@app.get("/debug")
+def debug_info():
+    return {
+        "root_dir": os.path.dirname(os.path.abspath(__file__)),
+        "frontend_file": os.path.join(os.path.dirname(os.path.abspath(__file__)), "integrated_frontend.html"),
+        "file_exists": os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), "integrated_frontend.html")),
+        "batch_reg_dir": BATCH_REG_DIR,
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=PORT)

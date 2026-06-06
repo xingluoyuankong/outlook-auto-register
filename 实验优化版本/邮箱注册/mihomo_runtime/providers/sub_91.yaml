@@ -1,0 +1,100 @@
+proxies:
+  - name: 原clash订阅已过期
+    cipher: aes-256-cfb
+    obfs: http_simple
+    obfs-param: bing.com
+    password: crossxx
+    port: 8890
+    protocol: origin
+    protocol-param: ''
+    server: baidu.com
+    type: ssr
+  - name: 或者服务器无法访问
+    cipher: aes-256-cfb
+    obfs: http_simple
+    obfs-param: bing.com
+    password: crossxx
+    port: 8890
+    protocol: origin
+    protocol-param: ''
+    server: baidu.com
+    type: ssr
+  - name: 搜索倚天剑clash
+    cipher: aes-256-cfb
+    obfs: http_simple
+    obfs-param: bing.com
+    password: crossxx
+    port: 8890
+    protocol: origin
+    protocol-param: ''
+    server: baidu.com
+    type: ssr
+  - name: 或登录https://a.aiguobit.com
+    cipher: aes-256-cfb
+    obfs: http_simple
+    obfs-param: bing.com
+    password: crossxx
+    port: 8890
+    protocol: origin
+    protocol-param: ''
+    server: baidu.com
+    type: ssr
+  - name: 备用https://a.hidexx.com
+    cipher: aes-256-cfb
+    obfs: http_simple
+    obfs-param: bing.com
+    password: crossxx
+    port: 8890
+    protocol: origin
+    protocol-param: ''
+    server: baidu.com
+    type: ssr
+  - name: 打开https://github.com/crossxx-labs/free-proxy
+    cipher: aes-256-cfb
+    obfs: http_simple
+    obfs-param: bing.com
+    password: crossxx
+    port: 8890
+    protocol: origin
+    protocol-param: ''
+    server: baidu.com
+    type: ssr
+  - name: 获取免费账号
+    cipher: aes-256-cfb
+    obfs: http_simple
+    obfs-param: bing.com
+    password: crossxx
+    port: 8890
+    protocol: origin
+    protocol-param: ''
+    server: baidu.com
+    type: ssr
+
+proxy-groups:
+  - name: "1.订阅时出错或已过期"
+    proxies:
+      - 原clash订阅已过期
+      - 或者服务器正宕机
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    interval: 300000
+  - name: "2.请到倚天剑clash续费"
+    proxies:
+      - 搜索倚天剑clash
+      - 或登录https://a.aiguobit.com
+      - 备用https://a.hidexx.com
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    interval: 300000
+  - name: "3.更多帮助信息"
+    proxies:
+      - 获取免费账号
+      - 打开https://github.com/crossxx-labs/free-proxy
+      - 或登录https://a.aiguobit.com
+    type: url-test
+    url: https://www.gstatic.com/generate_204
+    interval: 300000
+
+rules:
+    - 'GEOIP,CN,DIRECT'
+    - 'MATCH,DIRECT'

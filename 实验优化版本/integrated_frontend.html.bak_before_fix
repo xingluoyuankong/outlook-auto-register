@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>令牌取件系统</title>
+    <style>
+        :root { --primary: #107c41; --bg: #f3f4f6; --border: #e5e7eb; --text: #1f2937; --text-light: #6b7280; --danger: #ef4444; --success: #10b981; }
+        * { box-sizing: border-box; }
+        body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #e5e7eb; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        .app-container { width: 98%; max-width: 1300px; background-color: #ffffff; height: 100%; display: flex; flex-direction: column; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; }
+        .header { background-color: var(--primary); color: white; padding: 15px; text-align: center; font-size: 16px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.1); z-index: 10; }
+        .tab-bar { display: flex; background: #fff; border-bottom: 2px solid var(--border); }
+        .tab-btn { flex: 1; padding: 12px; text-align: center; font-size: 14px; font-weight: bold; cursor: pointer; border: none; background: #f9fafb; color: var(--text-light); transition: 0.2s; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+        .tab-btn.active { background: #fff; color: var(--primary); border-bottom-color: var(--primary); }
+        .tab-btn:hover { background: #f0fdf4; }
+        .tab-page { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+        .tab-page.active { display: flex; }
+        .alias-page { padding: 20px; overflow-y: auto; flex: 1; background: var(--bg); }
+        .merge-page { padding: 20px; overflow-y: auto; flex: 1; background: var(--bg); }
+        .alias-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 15px; }
+        .alias-card h3 { margin: 0 0 12px; font-size: 15px; color: var(--text); }
+        .alias-card label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); margin-bottom: 8px; cursor: pointer; }
+        .alias-card label input[type="checkbox"] { accent-color: var(--primary); width: 16px; height: 16px; }
+        .alias-input { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; resize: vertical; min-height: 120px; font-family: inherit; }
+        .alias-input:focus { border-color: var(--primary); }
+        .alias-num { width: 100px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; }
+        .alias-num:focus { border-color: var(--primary); }
+        .alias-result { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 13px; outline: none; resize: vertical; min-height: 200px; font-family: inherit; background: #f9fafb; }
+        .alias-status { font-size: 13px; color: var(--text-light); padding: 8px 0; min-height: 28px; }
+        .alias-status.ok { color: var(--success); font-weight: 600; }
+        .alias-status.warn { color: #d97706; font-weight: 600; }
+        .alias-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+        .import-section { padding: 15px; border-bottom: 1px solid var(--border); background: #fafafa; display: flex; justify-content: space-between; align-items: center; }
+        .btn-full { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-full:active { opacity: 0.8; }
+        .textarea-box { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; font-size: 13px; resize: none; outline: none; white-space: nowrap; overflow-x: auto; }
+        .textarea-box:focus { border-color: var(--primary); }
+        .group-select { padding: 8px; border: 1px solid var(--border); border-radius: 4px; outline: none; flex: 1; font-size: 13px; }
+        .toolbar { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px 15px; background: #fff; border-bottom: 1px solid var(--border); align-items: center; justify-content: space-between; }
+        .tb-top-row { display: flex; align-items: center; gap: 8px; }
+        .select-all-label { display: flex; align-items: center; gap: 4px; font-weight: bold; font-size: 14px; cursor: pointer; color: var(--text); white-space: nowrap; }
+        .view-select { background: #dcfce7; color: var(--primary); border-color: #a7f3d0; outline: none; cursor: pointer; padding: 6px 8px; border-radius: 4px; font-size: 13px; font-weight: bold; }
+        .group-filter-select { padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; outline: none; background: #fff; font-weight: bold; color: var(--primary); cursor: pointer; }
+        .search-input-mini { flex: 1; min-width: 150px; max-width: 250px; padding: 6px 10px; border: 1px solid var(--border); border-radius: 4px; font-size: 13px; outline: none; }
+        .search-input-mini:focus { border-color: var(--primary); }
+        .tb-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .tool-btn { padding: 6px 12px; font-size: 13px; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; color: var(--text); font-weight: bold; transition: background 0.2s; }
+        .tool-btn:hover { background: var(--bg); }
+        .btn-del { color: var(--danger); border-color: #fca5a5; background: #fef2f2; }
+        .btn-del:hover { background: #fee2e2; }
+        .main-workspace { display: flex; flex: 1; overflow: hidden; background: var(--bg); }
+        .workspace-list { flex: 1; overflow-y: auto; padding: 15px; padding-bottom: 80px; transition: 0.2s; }
+        .workspace-reader { width: 0; display: none; background: #fff; border-left: 1px solid var(--border); flex-direction: column; transition: 0.2s; overflow: hidden; }
+        .main-workspace.is-split .workspace-list { width: 420px; flex: none; border-right: 1px solid var(--border); padding-right: 10px; }
+        .main-workspace.is-split .workspace-reader { display: flex; flex: 1; }
+        .group-section { margin-bottom: 15px; background: #fff; border-radius: 8px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .group-header { padding: 12px 15px; background: #f9fafb; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid transparent; transition: background 0.2s; user-select: none; }
+        .group-header:hover { background: #f3f4f6; }
+        .group-header.is-open { border-bottom-color: var(--border); }
+        .group-title { font-size: 14px; font-weight: bold; color: var(--text); display: flex; align-items: center; gap: 8px; }
+        .group-body { padding: 12px; display: none; background: var(--bg); }
+        .group-body.is-open { display: block; }
+        .group-action-btn { border: none; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; cursor: pointer; transition: 0.2s; outline: none; }
+        .rename-btn { background: #e0e7ff; color: #4f46e5; }
+        .rename-btn:hover { background: #c7d2fe; }
+        .delete-btn { background: #fee2e2; color: #ef4444; }
+        .delete-btn:hover { background: #fca5a5; }
+        .group-count-badge { font-size: 12px; color: var(--primary); background: #dcfce7; padding: 4px 10px; border-radius: 12px; font-weight: bold; display: flex; align-items: center; gap: 6px; }
+        .toggle-icon { display: inline-block; transition: transform 0.2s; font-size: 10px; }
+        .group-header:not(.is-open) .toggle-icon { transform: rotate(-90deg); }
+        .group-body .acc-card { background: #fff; border-radius: 6px; padding: 12px; margin-bottom: 10px; border: 1px solid var(--border); display: flex; flex-direction: column; content-visibility: auto; contain-intrinsic-size: auto 60px; }
+        .group-body .acc-card:last-child { margin-bottom: 0; }
+        .action-btn { padding: 6px 16px; text-align: center; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; color: white; cursor: pointer; white-space: nowrap; }
+        .action-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .icon-btn { cursor: pointer; padding: 4px 6px; font-size: 14px; border-radius: 4px; display: flex; align-items: center; justify-content: center; border: 1px solid transparent; background: #f9fafb; color: var(--text-light); }
+        .icon-btn:hover { background: var(--bg); border-color: var(--border); color: var(--text); }
+        .inline-list-area { display: none; flex-direction: column; margin-top: 10px; padding: 12px; gap: 8px; background: #f9fafb; border: 1px solid var(--border); border-radius: 6px; }
+        .inline-mail-card { background: #fff; border: 1px solid var(--border); border-radius: 4px; padding: 10px; cursor: pointer; transition: 0.2s; }
+        .inline-mail-card:hover { border-color: var(--primary); }
+        .inline-mail-subj { font-size: 13px; font-weight: bold; color: var(--text); margin-bottom: 4px; line-height: 1.4; }
+        .inline-mail-time { font-size: 11px; color: var(--text-light); margin-bottom: 8px; }
+        .inline-view-btn { width: 100%; padding: 6px; background: #dcfce7; color: var(--primary); border: 1px solid #a7f3d0; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+        .inline-view-btn:hover { background: #a7f3d0; }
+        .verification-code { display: inline-flex; align-items: center; gap: 6px; padding: 4px 8px; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; font-size: 12px; font-weight: bold; color: #92400e; }
+        .copy-code-btn { padding: 2px 8px; background: #f59e0b; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 11px; font-weight: bold; transition: 0.2s; }
+        .copy-code-btn:hover { background: #d97706; }
+        .copy-code-btn:active { transform: scale(0.95); }
+        .ws-header { padding: 12px 20px; background: #f9fafb; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .ws-title { font-size: 14px; font-weight: bold; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px; }
+        .ws-mail-content { flex: 1; display: flex; flex-direction: column; background: #fff; }
+        .ws-content-header { padding: 15px 20px; border-bottom: 1px solid var(--border); background: #fff; }
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 9999; display: none; align-items: center; justify-content: center; }
+        .modal-content { background: #fff; width: 90%; max-width: 1000px; height: 80vh; border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: fadeIn 0.2s; }
+        .modal-content-small { height: auto; max-height: 85vh; max-width: 500px; padding: 20px; box-sizing: border-box; overflow: visible; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #f9fafb; }
+        .modal-title { font-size: 16px; font-weight: bold; color: var(--text); }
+        .modal-close { width: 32px; height: 32px; border-radius: 16px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; color: var(--text-light); transition: 0.2s; }
+        .modal-close:hover { background: #e5e7eb; color: var(--danger); }
+        .modal-body-split { display: flex; flex: 1; overflow: hidden; }
+        .modal-sidebar { width: 300px; border-right: 1px solid var(--border); background: #fafafa; overflow-y: auto; display: flex; flex-direction: column; }
+        .sidebar-mail-item { padding: 15px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.2s; }
+        .sidebar-mail-item:hover { background: #f3f4f6; }
+        .sidebar-mail-item.active { background: #dcfce7; border-left: 4px solid var(--primary); padding-left: 11px; }
+        .sidebar-subj { font-size: 14px; font-weight: bold; color: var(--text); margin-bottom: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+        .sidebar-time { font-size: 12px; color: var(--text-light); }
+        .modal-main { flex: 1; display: flex; flex-direction: column; background: #fff; }
+        .mobile-drag-handle { display: none; }
+        .modal-content.hide-sidebar .modal-sidebar { display: none !important; }
+        @media (max-width: 768px) {
+            .toolbar { flex-direction: column; align-items: stretch; padding: 12px; gap: 10px; }
+            .tb-top-row { flex-wrap: nowrap; width: 100%; gap: 5px; justify-content: flex-start; overflow-x: auto; padding-bottom: 2px; }
+            .view-select, .group-filter-select { flex: 1; min-width: 80px; padding: 6px 2px; font-size: 12px; }
+            .search-input-mini { max-width: 100%; width: 100%; box-sizing: border-box; }
+            .tb-actions { justify-content: space-between; width: 100%; gap: 6px; }
+            .tb-actions .tool-btn { flex: 1; padding: 8px 2px; font-size: 12px; text-align: center; }
+            .app-container { width: 100%; max-width: none; border-radius: 0; box-shadow: none; }
+            .workspace-list { padding: 8px 0 !important; padding-bottom: 100px !important; }
+            .main-workspace.is-split .workspace-list { padding: 8px 0 !important; width: 100% !important; flex: 1 !important; }
+            .main-workspace.is-split .workspace-reader { display: none !important; }
+            .group-section { margin-bottom: 8px; border-radius: 0; border-left: none; border-right: none; box-shadow: none; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+            .group-header { padding: 10px 12px; }
+            .group-body { padding: 4px 0px; }
+            .group-body .acc-card { border-radius: 0; border-left: none; border-right: none; padding: 10px 8px; margin-bottom: 4px; box-shadow: none; border-color: #f3f4f6; }
+            .inline-list-area { border: none; background: #fff; padding: 4px 0; border-top: 1px solid var(--border); border-radius: 0; }
+            .inline-mail-card { border-radius: 0; border-left: none; border-right: none; margin-bottom: 4px; border-color: #eee; }
+            .modal-body-split { flex-direction: column; }
+            .modal-sidebar { width: 100%; height: 40%; border-right: none; border-bottom: none; }
+            .mobile-drag-handle { display: flex; justify-content: center; align-items: center; height: 12px; background: #f3f4f6; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); box-shadow: 0 3px 5px -1px rgba(0,0,0,0.05); z-index: 10; }
+            .mobile-drag-handle::before { content: ''; width: 40px; height: 4px; background: #d1d5db; border-radius: 2px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">微软令牌网页取件</div>
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('mail')">📧 邮件取件</button>
+            <button class="tab-btn" onclick="switchTab('register')">🚀 批量注册</button>
+            <button class="tab-btn" onclick="switchTab('alias')">✨ 别名生成器</button>
+            <button class="tab-btn" onclick="switchTab('merge')">📂 文件合并</button>
+        </div>
+        <div class="tab-page active" id="tab-mail">
+        <div class="import-section">
+            <div style="font-weight:bold; font-size:15px; color:var(--text);">令牌库分组管理</div>
+            <button class="btn-full" style="width:auto; padding:8px 20px; font-size:13px;" onclick="openImportModal()">📥 导入令牌账号</button>
+        </div>
+        <div class="toolbar">
+            <div class="tb-top-row">
+                <label class="select-all-label"><input type="checkbox" id="selectAll" style="margin:0; width:16px; height:16px;" onchange="toggleSelectAll()"> 全选</label>
+                <select id="viewMode" class="view-select" onchange="saveViewMode()"><option value="split">📄 分栏</option><option value="modal">🪟 浮窗</option></select>
+                <select id="groupFilter" class="group-filter-select" onchange="changeGroupFilter()"><option value="All">📁 所有分组</option></select>
+            </div>
+            <input type="text" id="searchInput" class="search-input-mini" placeholder="🔍 搜索邮箱..." onkeyup="filterAccounts()">
+            <div class="tb-actions">
+                <button class="tool-btn" style="color:#107c41; border-color:#bbf7d0; background:#dcfce7;" onclick="promptCreateGroup()">新建分组</button>
+                <button class="tool-btn" style="color:#d97706; border-color:#fde68a; background:#fef3c7;" onclick="openMoveModal()">移动分组</button>
+                <button class="tool-btn btn-del" onclick="batchDelete()">删除勾选</button>
+                <button class="tool-btn" onclick="batchExport('acc_pwd')">导出账密</button>
+                <button class="tool-btn" onclick="batchExport('raw')">原数据</button>
+            </div>
+        </div>
+        <div class="main-workspace is-split" id="batchWorkspace">
+            <div class="workspace-list" id="accList"><div style="text-align:center; padding:40px; color:#9ca3af; font-size:15px;">列表为空，请点击上方按钮导入数据</div></div>
+            <div class="workspace-reader" id="workspaceReader">
+                <div class="ws-header"><div class="ws-title" id="wsTitle">正文内容</div><button class="tool-btn" onclick="closeWorkspaceContent()">收起</button></div>
+                <div class="ws-mail-content" id="wsMailContent">
+                    <div class="ws-content-header" id="wsContentHeader"><div style="padding:40px; text-align:center; color:#9ca3af; font-size:14px;">请在左侧点击邮件查看内容</div></div>
+                    <iframe id="wsFrame" style="flex:1; width:100%; border:none;"></iframe>
+                </div>
+            </div>
+        </div>
+        </div>
+        <!-- 邮件取件 tab 结束 -->
+
+        <!-- 别名生成器 tab -->
+        <div class="tab-page" id="tab-alias">
+            <div class="alias-page">
+                <div class="alias-card">
+                    <h3>📥 输入源</h3>
+                    <label><input type="radio" name="aliasSrc" value="group" checked onchange="toggleAliasSrc()"> 从分组选择</label>
+                    <label><input type="radio" name="aliasSrc" value="text" onchange="toggleAliasSrc()"> 手动粘贴</label>
+                    <div id="aliasGroupSection" style="margin-top:10px;">
+                        <div style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+                            <select id="aliasGroupSelect" class="group-select" style="max-width:300px;"></select>
+                            <button class="tool-btn" style="color:#107c41; border-color:#bbf7d0; background:#dcfce7;" onclick="aliasSelectAllGroup()">全选此分组</button>
+                        </div>
+                        <div id="aliasAccList" style="max-height:200px; overflow-y:auto; border:1px solid var(--border); border-radius:6px; padding:8px; background:#fafafa;"></div>
+                        <div id="aliasSelectedCount" style="font-size:12px; color:var(--text-light); margin-top:6px;">已选 0 个邮箱</div>
+                    </div>
+                    <div id="aliasTextSection" style="display:none; margin-top:10px;">
+                        <textarea id="aliasTextInput" class="alias-input" placeholder="粘贴邮箱数据，每行一条\n格式: email----password----client_id----refresh_token\n支持 @hotmail.* 和 @outlook.* 域名"></textarea>
+                        <div style="margin-top:8px;">
+                            <input type="file" id="aliasFileInput" accept=".txt" style="display:none;" onchange="handleAliasFileUpload(event)">
+                            <button class="tool-btn" onclick="document.getElementById('aliasFileInput').click()">📁 上传TXT文件</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="alias-card">
+                    <h3>⚙️ 生成配置</h3>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                        <div>
+                            <div style="font-size:12px; color:var(--text-light); margin-bottom:4px;">每个邮箱生成数量</div>
+                            <input id="aliasCount" type="number" class="alias-num" min="1" max="50" value="5">
+                        </div>
+                        <label style="margin-top:16px;"><input type="checkbox" id="aliasKeepFields" checked> 保留原字段（输出：alias----其余字段）</label>
+                        <label style="margin-top:16px;"><input type="checkbox" id="aliasStagger" checked> 错开顺序输出</label>
+                    </div>
+                </div>
+
+                <div class="alias-actions">
+                    <button class="btn-full" style="padding:10px 30px;" onclick="generateAliases()">✨ 生成别名</button>
+                    <button class="tool-btn" onclick="clearAliasAll()">清空全部</button>
+                </div>
+
+                <div class="alias-card" style="margin-top:15px;">
+                    <h3>📋 生成结果</h3>
+                    <div id="aliasStatus" class="alias-status">等待生成...</div>
+                    <textarea id="aliasResult" class="alias-result" placeholder="生成结果会显示在这里" readonly></textarea>
+                    <div class="alias-actions">
+                        <button class="btn-full" style="background:linear-gradient(120deg,#d96a2e,#ef8f41); padding:10px 24px;" onclick="copyAliasResult()">📋 复制结果</button>
+                        <button class="tool-btn" onclick="downloadAliasResult()">💾 下载 result.txt</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 别名生成器 tab 结束 -->
+
+        <div class="tab-page" id="tab-merge">
+            <div class="merge-page">
+                <div class="alias-card">
+                    <h3>📂 扫描目录</h3>
+                    <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+                        <input type="text" id="mergeDirInput" class="alias-input" style="min-height:auto; flex:1;" placeholder="输入凭证文件目录路径，如 C:\Users\xxx\Downloads\邮箱文件">
+                        <button class="btn-full" style="width:auto; padding:10px 24px; white-space:nowrap;" onclick="scanMergeDir()">🔍 扫描</button>
+                    </div>
+                    <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:center;">
+                        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                            <input type="checkbox" id="mergeDedup" checked style="accent-color:var(--primary); width:16px; height:16px;"> 按邮箱去重
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                            <input type="checkbox" id="mergeExcludeUsed" checked style="accent-color:var(--primary); width:16px; height:16px;"> 排除"已经使用"目录
+                        </label>
+                        <label style="display:flex; align-items:center; gap:6px; font-size:13px; cursor:pointer;">
+                            <input type="checkbox" id="mergeExcludeGiven" style="accent-color:var(--primary); width:16px; height:16px;"> 排除"已经给人"目录
+                        </label>
+                    </div>
+                </div>
+
+                <div id="mergeStatus" class="alias-status" style="padding:10px 0;">输入目录路径后点击"扫描"</div>
+
+                <div class="alias-card">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                        <h3 style="margin:0;">📋 扫描结果</h3>
+                        <div id="mergeSummary" style="font-size:13px; color:var(--text-light);"></div>
+                    </div>
+                    <div id="mergePreviewArea" style="max-height:400px; overflow-y:auto; border:1px solid var(--border); border-radius:6px;">
+                        <div style="text-align:center; padding:40px; color:#9ca3af;">扫描后在此显示结果</div>
+                    </div>
+                </div>
+
+                <div class="alias-card">
+                    <h3>📥 导入设置</h3>
+                    <div style="display:flex; gap:15px; align-items:center; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:13px; font-weight:bold;">导入到分组:</span>
+                            <select id="mergeGroupSelect" class="group-select" style="min-width:150px;"></select>
+                        </div>
+                        <button class="tool-btn" style="color:var(--primary); border-color:#bbf7d0; background:#dcfce7;" onclick="promptMergeCreateGroup()">+ 新建分组</button>
+                    </div>
+                </div>
+
+                <div class="alias-actions">
+                    <button class="btn-full" id="mergeImportBtn" style="padding:12px 40px; font-size:14px;" onclick="confirmMergeImport()" disabled>📥 确认导入到数据库</button>
+                    <button class="tool-btn" id="mergeDownloadBtn" style="padding:10px 20px;" onclick="downloadMergeResult()" disabled>💾 下载合并文件</button>
+                    <button class="tool-btn" onclick="clearMergeResult()">清空结果</button>
+                </div>
+            </div>
+        </div>
+        <!-- 文件合并 tab 结束 -->
+
+        <div class="modal-overlay" id="emailModal">
+            <div class="modal-content">
+                <div class="modal-header"><div class="modal-title" id="modalTitle">邮件列表</div><div class="modal-close" onclick="closeModal()">✕</div></div>
+                <div class="modal-body-split">
+                    <div class="modal-sidebar" id="modalSidebar"></div>
+                    <div class="mobile-drag-handle"></div>
+                    <div class="modal-main"><div class="content-header" id="contentHeader"></div><iframe id="modalFrame" style="flex:1; width:100%; border:none;" sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin"></iframe></div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="importDataModal" style="z-index:10000;">
+            <div class="modal-content modal-content-small">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div style="font-size:16px; font-weight:bold; color:var(--text);">导入令牌账号</div><div class="modal-close" onclick="closeImportModal()">✕</div></div>
+                <textarea id="importModalText" class="textarea-box" style="height:160px; margin-bottom:15px;" placeholder="粘贴格式: 账号----密码----clientid----refresh_token"></textarea>
+                <div style="margin-bottom:15px; display:flex; align-items:center; gap:10px;"><span style="font-size:13px; font-weight:bold;">导入到:</span><select id="importGroupSelect" class="group-select"></select><button class="tool-btn" style="color:var(--primary); border-color:#bbf7d0; background:#dcfce7; padding:8px 12px;" onclick="promptCreateGroup()">+ 新建分组</button></div>
+                <div style="display:flex; gap:10px;"><input type="file" id="realFileInput" accept=".txt" style="display:none;" onchange="handleFileUpload(event)"><button class="btn-full" style="flex:1; background:#fff; color:var(--primary); border:1px solid var(--primary);" onclick="document.getElementById('realFileInput').click()">📁 上传TXT</button><button class="btn-full" style="flex:1;" onclick="confirmImport()">确认导入</button></div>
+            </div>
+        </div>
+        <div class="modal-overlay" id="moveDataModal" style="z-index:10000;">
+            <div class="modal-content modal-content-small" style="max-width:400px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;"><div style="font-size:16px; font-weight:bold; color:var(--text);">移动分组</div><div class="modal-close" onclick="closeMoveModal()">✕</div></div>
+                <div id="moveCountLabel" style="font-size:13px; color:var(--text-light); margin-bottom:15px; text-align:center; background:#f3f4f6; padding:10px; border-radius:6px; font-weight:bold;">已选择 N 个账号</div>
+                <div style="margin-bottom:20px; display:flex; align-items:center; gap:10px;"><span style="font-size:13px; font-weight:bold;">目标分组:</span><select id="moveGroupSelect" class="group-select"></select></div>
+                <button class="btn-full" style="width:100%;" onclick="confirmMove()">确认移动</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        let accounts = [];
+        let groups = ['默认分组'];
+        let currentGroupFilter = 'All';
+        let emailCache = {};
+        let groupCollapseState = {};
+
+        function isMobileDevice() { return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent); }
+
+        window.onload = () => {
+            let viewMode = localStorage.getItem('view_mode_token');
+            if (!viewMode) viewMode = isMobileDevice() ? 'modal' : 'split';
+            document.getElementById('viewMode').value = viewMode;
+            applyViewMode();
+            loadGroups();
+            loadAccounts();
+        };
+
+        async function loadGroups() {
+            try {
+                const res = await fetch(`${API}/api/groups`);
+                groups = await res.json();
+                renderGroupDropdowns();
+            } catch(e) { console.error('加载分组失败:', e); }
+        }
+
+        async function loadAccounts() {
+            try {
+                const group = currentGroupFilter;
+                const search = document.getElementById('searchInput').value;
+                const params = new URLSearchParams({ group, search });
+                const res = await fetch(`${API}/api/accounts?${params}`);
+                accounts = await res.json();
+                accounts.forEach(a => a.selected = false);
+                renderList();
+            } catch(e) { console.error('加载账号失败:', e); }
+        }
+
+        function renderGroupDropdowns() {
+            const filterSelect = document.getElementById('groupFilter');
+            const importSelect = document.getElementById('importGroupSelect');
+            const moveSelect = document.getElementById('moveGroupSelect');
+            const currFilter = filterSelect.value;
+
+            let filterHtml = '<option value="All">📁 所有分组</option>';
+            let optionsHtml = '';
+            groups.forEach(g => {
+                let escaped = g.replace(/"/g, '&quot;');
+                filterHtml += `<option value="${escaped}">${escaped}</option>`;
+                optionsHtml += `<option value="${escaped}">${escaped}</option>`;
+            });
+            filterSelect.innerHTML = filterHtml;
+            filterSelect.value = groups.includes(currFilter) ? currFilter : 'All';
+            importSelect.innerHTML = optionsHtml;
+            moveSelect.innerHTML = optionsHtml;
+        }
+
+        function changeGroupFilter() {
+            currentGroupFilter = document.getElementById('groupFilter').value;
+            loadAccounts();
+        }
+
+        async function promptCreateGroup() {
+            let name = prompt("请输入新分组名称：\n(创建后可在移动分组或导入时选择)");
+            if (name) {
+                name = name.trim();
+                if (name) {
+                    try {
+                        const res = await fetch(`${API}/api/groups`, {
+                            method: 'POST', headers: {'Content-Type':'application/json'},
+                            body: JSON.stringify({name})
+                        });
+                        if (res.ok) {
+                            alert(`✅ 分组 "${name}" 创建成功！`);
+                            await loadGroups();
+                            await loadAccounts();
+                        } else {
+                            const err = await res.json();
+                            alert(`⚠️ ${err.detail || '创建失败'}`);
+                        }
+                    } catch(e) { alert('创建失败: ' + e.message); }
+                }
+            }
+        }
+
+        async function renameGroup(oldName) {
+            let newName = prompt("请输入新的分组名称：", oldName);
+            if (newName !== null) {
+                newName = newName.trim();
+                if (newName === "" || newName === oldName) return;
+                try {
+                    const res = await fetch(`${API}/api/groups`, {
+                        method: 'PUT', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({old_name: oldName, new_name: newName})
+                    });
+                    if (res.ok) {
+                        await loadGroups();
+                        await loadAccounts();
+                    } else {
+                        const err = await res.json();
+                        alert(`⚠️ ${err.detail || '重命名失败'}`);
+                    }
+                } catch(e) { alert('重命名失败: ' + e.message); }
+            }
+        }
+
+        async function deleteGroup(groupName) {
+            if (confirm("是否确认删除该分组及组内所有邮箱？")) {
+                try {
+                    await fetch(`${API}/api/groups/${encodeURIComponent(groupName)}`, { method: 'DELETE' });
+                    await loadGroups();
+                    currentGroupFilter = 'All';
+                    document.getElementById('groupFilter').value = 'All';
+                    await loadAccounts();
+                } catch(e) { alert('删除失败: ' + e.message); }
+            }
+        }
+
+        function openImportModal() {
+            document.getElementById('importDataModal').style.display = 'flex';
+            document.getElementById('importGroupSelect').value = groups[0] || '默认分组';
+        }
+        function closeImportModal() {
+            document.getElementById('importDataModal').style.display = 'none';
+            document.getElementById('importModalText').value = '';
+        }
+
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) { document.getElementById('importModalText').value = e.target.result; };
+            reader.readAsText(file);
+        }
+
+        async function confirmImport() {
+            const text = document.getElementById('importModalText').value.trim();
+            const targetGroup = document.getElementById('importGroupSelect').value;
+            if (!text) { alert("请输入需要导入的数据！"); return; }
+
+            const lines = text.split('\n');
+            const items = [];
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                const parts = line.split('----');
+                if (parts.length >= 4) {
+                    const emailMatch = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+                    if (emailMatch) {
+                        items.push({
+                            email: emailMatch[0],
+                            pwd: parts[1].trim(),
+                            client_id: parts[2].trim(),
+                            token: parts[3].trim(),
+                            raw: line,
+                            group_name: targetGroup
+                        });
+                    }
+                }
+            });
+
+            if (items.length === 0) { alert("⚠️ 未能提取出合法的账号，请检查格式 (需包含4段)！"); return; }
+
+            try {
+                const res = await fetch(`${API}/api/accounts/import`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({items})
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    closeImportModal();
+                    currentGroupFilter = targetGroup;
+                    document.getElementById('groupFilter').value = targetGroup;
+                    await loadAccounts();
+                    alert(`✅ 成功导入 ${data.added} 个账号到 "${targetGroup}" 分组！`);
+                }
+            } catch(e) { alert('导入失败: ' + e.message); }
+        }
+
+        function openMoveModal() {
+            const selected = accounts.filter(a => a.selected);
+            if (selected.length === 0) { alert('请先勾选当前页面需要移动的账号！'); return; }
+            document.getElementById('moveDataModal').style.display = 'flex';
+            document.getElementById('moveCountLabel').innerText = `已选择 ${selected.length} 个账号，准备移动`;
+            document.getElementById('moveGroupSelect').value = groups[0] || '默认分组';
+        }
+        function closeMoveModal() { document.getElementById('moveDataModal').style.display = 'none'; }
+
+        async function confirmMove() {
+            const targetGroup = document.getElementById('moveGroupSelect').value;
+            const ids = accounts.filter(a => a.selected).map(a => a.id);
+            try {
+                const res = await fetch(`${API}/api/accounts/move`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ids, target_group: targetGroup})
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    closeMoveModal();
+                    document.getElementById('selectAll').checked = false;
+                    await loadAccounts();
+                    alert(`✅ 成功将 ${data.moved} 个账号移动到 "${targetGroup}" 分组！`);
+                }
+            } catch(e) { alert('移动失败: ' + e.message); }
+        }
+
+        // --------------- Merge Files ---------------
+        let mergeRecords = [];
+
+        function refreshMergeGroupSelect() {
+            const sel = document.getElementById('mergeGroupSelect');
+            sel.innerHTML = groups.map(g => `<option value="${g}">${g}</option>`).join('');
+            sel.value = groups[0] || '默认分组';
+        }
+
+        function promptMergeCreateGroup() {
+            let name = prompt("请输入新分组名称：");
+            if (!name) return;
+            fetch(`${API}/api/groups`, {
+                method: 'POST', headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({name})
+            }).then(r => r.json()).then(data => {
+                if (data.status === 'ok') {
+                    groups.push(name);
+                    refreshMergeGroupSelect();
+                    document.getElementById('mergeGroupSelect').value = name;
+                } else { alert(data.message || '创建失败'); }
+            });
+        }
+
+        async function scanMergeDir() {
+            const dir = document.getElementById('mergeDirInput').value.trim();
+            if (!dir) { alert('请输入目录路径！'); return; }
+
+            const excludeDirs = [];
+            if (document.getElementById('mergeExcludeUsed').checked) excludeDirs.push('已经使用');
+            if (document.getElementById('mergeExcludeGiven').checked) excludeDirs.push('已经给人');
+            const dedup = document.getElementById('mergeDedup').checked;
+
+            const statusEl = document.getElementById('mergeStatus');
+            statusEl.innerText = '正在扫描...';
+            statusEl.style.color = 'var(--text-light)';
+            document.getElementById('mergeImportBtn').disabled = true;
+            document.getElementById('mergeDownloadBtn').disabled = true;
+
+            try {
+                const payload = { directory: dir, exclude_dirs: excludeDirs, dedup: dedup };
+                console.log('[MERGE] Sending:', JSON.stringify(payload));
+                const res = await fetch(`${API}/api/merge_files`, {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) {
+                    const errText = await res.text().catch(() => '');
+                    statusEl.innerText = `❌ 服务器错误 (${res.status}): ${errText.substring(0, 200)}`;
+                    statusEl.style.color = 'var(--danger)';
+                    return;
+                }
+                const data = await res.json();
+                if (data.status !== 'ok') {
+                    statusEl.innerText = '❌ ' + data.message;
+                    statusEl.style.color = 'var(--danger)';
+                    return;
+                }
+
+                mergeRecords = data.records;
+                statusEl.innerHTML = `扫描完成: <b>${data.total_scanned}</b> 条` +
+                    (data.duplicates > 0 ? ` | 去重移除: <b style="color:#d97706;">${data.duplicates}</b> 条` : '') +
+                    ` | 最终: <b style="color:var(--success);">${data.after_dedup}</b> 条` +
+                    (data.errors.length > 0 ? ` | <span style="color:var(--danger);">${data.errors.length} 个文件跳过</span>` : '');
+                statusEl.style.color = 'var(--text)';
+
+                // 预览
+                const previewEl = document.getElementById('mergePreviewArea');
+                if (mergeRecords.length === 0) {
+                    previewEl.innerHTML = '<div style="text-align:center; padding:40px; color:#9ca3af;">未找到合法的凭证记录</div>';
+                } else {
+                    let html = '<table style="width:100%; border-collapse:collapse; font-size:12px;"><thead><tr style="background:#f3f4f6;">';
+                    html += '<th style="padding:8px; text-align:left; border-bottom:2px solid var(--border);">#</th>';
+                    html += '<th style="padding:8px; text-align:left; border-bottom:2px solid var(--border);">邮箱</th>';
+                    html += '<th style="padding:8px; text-align:left; border-bottom:2px solid var(--border);">密码</th>';
+                    html += '<th style="padding:8px; text-align:left; border-bottom:2px solid var(--border);">来源</th>';
+                    html += '</tr></thead><tbody>';
+                    mergeRecords.forEach((r, i) => {
+                        const bg = i % 2 === 0 ? '#fff' : '#f9fafb';
+                        html += `<tr style="background:${bg};">`;
+                        html += `<td style="padding:6px 8px; border-bottom:1px solid var(--border); color:var(--text-light);">${i+1}</td>`;
+                        html += `<td style="padding:6px 8px; border-bottom:1px solid var(--border); word-break:break-all;">${r.email}</td>`;
+                        html += `<td style="padding:6px 8px; border-bottom:1px solid var(--border); color:var(--text-light);">${r.pwd.substring(0,16)}${r.pwd.length>16?'...':''}</td>`;
+                        html += `<td style="padding:6px 8px; border-bottom:1px solid var(--border); color:var(--text-light);">${r.source}</td>`;
+                        html += '</tr>';
+                    });
+                    html += '</tbody></table>';
+                    previewEl.innerHTML = html;
+                }
+
+                document.getElementById('mergeSummary').innerHTML = mergeRecords.length > 0
+                    ? `共 <b>${mergeRecords.length}</b> 条记录待处理` : '';
+                document.getElementById('mergeImportBtn').disabled = mergeRecords.length === 0;
+                document.getElementById('mergeDownloadBtn').disabled = mergeRecords.length === 0;
+
+            } catch(e) {
+                statusEl.innerText = '❌ 请求失败: ' + e.message;
+                statusEl.style.color = 'var(--danger)';
+            }
+        }
+
+        async function confirmMergeImport() {
+            if (mergeRecords.length === 0) return;
+            const targetGroup = document.getElementById('mergeGroupSelect').value;
+            const items = mergeRecords.map(r => ({
+                email: r.email, pwd: r.pwd, client_id: r.client_id,
+                token: r.token, raw: r.raw, group_name: targetGroup
+            }));
+
+            try {
+                const res = await fetch(`${API}/api/accounts/import`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ items })
+                });
+                const data = await res.json();
+                if (data.status === 'ok') {
+                    currentGroupFilter = targetGroup;
+                    document.getElementById('groupFilter').value = targetGroup;
+                    await loadAccounts();
+                    alert(`✅ 成功导入 ${data.added} 个账号到 "${targetGroup}" 分组！`);
+                }
+            } catch(e) { alert('导入失败: ' + e.message); }
+        }
+
+        function downloadMergeResult() {
+            if (mergeRecords.length === 0) return;
+            const lines = mergeRecords.map(r => `${r.email}----${r.pwd}----${r.client_id}----${r.token}`);
+            const blob = new Blob([lines.join('\n')], {type: 'text/plain;charset=utf-8'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `merged_${new Date().toISOString().slice(0,10).replace(/-/g,'')}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearMergeResult() {
+            mergeRecords = [];
+            document.getElementById('mergePreviewArea').innerHTML = '<div style="text-align:center; padding:40px; color:#9ca3af;">扫描后在此显示结果</div>';
+            document.getElementById('mergeStatus').innerText = '输入目录路径后点击"扫描"';
+            document.getElementById('mergeStatus').style.color = 'var(--text-light)';
+            document.getElementById('mergeSummary').innerText = '';
+            document.getElementById('mergeImportBtn').disabled = true;
+            document.getElementById('mergeDownloadBtn').disabled = true;
+        }
+
+        function toggleGroup(safeGroupId, groupName) {
+            groupCollapseState[groupName] = !groupCollapseState[groupName];
+            renderList();
+        }
+
+        function renderList() {
+            const list = document.getElementById('accList');
+            if (accounts.length === 0) {
+                list.innerHTML = '<div style="text-align:center; padding:40px; color:#9ca3af; font-size:15px;">列表为空，请点击上方按钮导入数据</div>';
+                return;
+            }
+
+            let grouped = {};
+            groups.forEach(g => grouped[g] = []);
+            accounts.forEach((acc, index) => {
+                if (!grouped[acc.group]) grouped[acc.group] = [];
+                grouped[acc.group].push({acc, index, idxInGroup: grouped[acc.group].length});
+            });
+
+            const isMobile = isMobileDevice();
+            let viewMode = document.getElementById('viewMode').value;
+            let finalHtml = '';
+
+            groups.forEach(g => {
+                const accsInGroup = grouped[g] || [];
+                if (accsInGroup.length === 0) return;
+
+                const safeGroupId = 'g_' + encodeURIComponent(g).replace(/%/g, '_').replace(/\./g, '_');
+                const isCollapsed = groupCollapseState[g] === true;
+                const openClass = isCollapsed ? '' : 'is-open';
+
+                let groupHtml = `
+                    <div class="group-section" id="sect_${safeGroupId}" data-group="${g}">
+                        <div class="group-header ${openClass}" onclick="toggleGroup('${safeGroupId}', '${g.replace(/'/g, "\\'")}')">
+                            <div class="group-title"><span class="group-icon">📁</span> ${g}</div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <button class="group-action-btn rename-btn" onclick="event.stopPropagation(); renameGroup('${g.replace(/'/g, "\\'")}')">重命名</button>
+                                <div class="group-count-badge"><span>${accsInGroup.length}</span> 账号 <span class="toggle-icon">▼</span></div>
+                                <button class="group-action-btn delete-btn" onclick="event.stopPropagation(); deleteGroup('${g.replace(/'/g, "\\'")}')">✕ 删除</button>
+                            </div>
+                        </div>
+                        <div class="group-body ${openClass}" id="group_body_${safeGroupId}">`;
+
+                if (!isCollapsed) {
+                    let cardsHtml = accsInGroup.map((item) => {
+                        const acc = item.acc;
+                        const index = item.index;
+                        const displayNum = item.idxInGroup + 1;
+
+                        let inner = `
+                            <div class="acc-card" data-email="${acc.email}" data-index="${index}">
+                                <div style="display:flex; align-items:center; justify-content:space-between; width:100%; margin-bottom:8px;">
+                                    <div style="display:flex; align-items:center; flex:1; min-width:0; overflow:hidden;">
+                                        <input type="checkbox" style="margin:0 8px 0 0; width:16px; height:16px;" ${acc.selected ? 'checked' : ''} onchange="toggleSelect(${index}, this.checked)">
+                                        <span style="font-size:14px; font-weight:bold; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${acc.email}">${displayNum}. ${acc.email}</span>
+                                    </div>
+                                    <div style="display:flex; align-items:center; flex-shrink:0; margin-left:10px; gap:4px;">
+                                        <div class="icon-btn" onclick="copyText('${acc.email}')" title="复制账号">📋</div>
+                                        <div class="icon-btn" style="color:var(--danger);" onclick="deleteAcc(${index})" title="删除">✕</div>
+                                    </div>
+                                </div>
+                                <div style="display:flex; padding-left:24px; gap:8px;">
+                                    <button class="action-btn" style="background:var(--success);" onclick="fetchMail(${index}, 1, this)">最新一封</button>
+                                    <button class="action-btn" style="background:#0ea5e9;" onclick="fetchMail(${index}, 50, this)">历史邮件</button>
+                                    <button class="action-btn" style="background:#f59e0b;" onclick="copyLatestCode(${index}, this)">复制最新验证码</button>
+                                </div>`;
+
+                        let resHtml = '';
+                        let displayStyle = 'none';
+                        if (emailCache[index]) {
+                            displayStyle = 'flex';
+                            if (emailCache[index].length === 0) {
+                                resHtml = `<div style="padding:15px; text-align:center; color:#9ca3af; font-size:13px; background:#fff; border:1px solid var(--border); border-radius:4px;">📭 无邮件</div>`;
+                            } else {
+                                resHtml = emailCache[index].map((em, eIdx) => {
+                                    let subj = em.subject.replace("[收件箱]", "<span style='color:var(--success); font-weight:bold;'>[收件箱]</span> ").replace("[垃圾箱]", "<span style='color:var(--danger); font-weight:bold;'>[垃圾箱]</span> ");
+                                    let codeBtn = '';
+                                    if (em.verification_code) {
+                                        codeBtn = `<span style="color:#f59e0b; font-size:12px; font-weight:bold; cursor:pointer; margin-left:auto; flex-shrink:0; padding:2px 6px; background:#fef3c7; border:1px solid #fde68a; border-radius:4px;" onclick="event.stopPropagation(); copyCode('${em.verification_code}')" title="点击复制验证码">${em.verification_code}</span>`;
+                                    }
+                                    return `<div class="inline-mail-card" id="inline_item_${index}_${eIdx}" onclick="showInlineContent('${index}', ${eIdx})" style="display:flex; align-items:center; gap:8px;"><div style="flex:1; min-width:0;"><div class="inline-mail-subj">${subj}</div><div class="inline-mail-time">${em.date}</div></div>${codeBtn}<button class="inline-view-btn" style="flex-shrink:0;">查看正文</button></div>`;
+                                }).join('');
+                            }
+                        }
+
+                        inner += `<div class="inline-list-area" id="res_${index}" style="display:${displayStyle}">${resHtml}</div></div>`;
+                        return inner;
+                    }).join('');
+
+                    groupHtml += cardsHtml;
+                }
+
+                groupHtml += `</div></div>`;
+                finalHtml += groupHtml;
+            });
+
+            list.innerHTML = finalHtml;
+            updateSelectAllState();
+        }
+
+        let searchTimeout;
+        function filterAccounts() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => { loadAccounts(); }, 300);
+        }
+
+        function toggleSelect(index, isChecked) {
+            accounts[index].selected = isChecked;
+            updateSelectAllState();
+        }
+
+        function toggleSelectAll() {
+            const isChecked = document.getElementById('selectAll').checked;
+            accounts.forEach(a => { a.selected = isChecked; });
+            renderList();
+        }
+
+        function updateSelectAllState() {
+            const selectAllBox = document.getElementById('selectAll');
+            if (accounts.length === 0) { selectAllBox.checked = false; return; }
+            selectAllBox.checked = accounts.every(a => a.selected);
+        }
+
+        async function deleteAcc(index) {
+            if (!confirm('确定删除该账号吗？')) return;
+            try {
+                await fetch(`${API}/api/accounts/${accounts[index].id}`, { method: 'DELETE' });
+                await loadAccounts();
+            } catch(e) { alert('删除失败: ' + e.message); }
+        }
+
+        async function batchDelete() {
+            const ids = accounts.filter(a => a.selected).map(a => a.id);
+            if (ids.length === 0) { alert('请先勾选当前页面需要删除的账号！'); return; }
+            try {
+                const res = await fetch(`${API}/api/accounts/batch_delete`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(ids)
+                });
+                const data = await res.json();
+                document.getElementById('selectAll').checked = false;
+                await loadAccounts();
+                alert(`✅ 已删除 ${data.deleted} 个账号`);
+            } catch(e) { alert('删除失败: ' + e.message); }
+        }
+
+        async function batchExport(type) {
+            const ids = accounts.filter(a => a.selected).map(a => a.id);
+            if (ids.length === 0) { alert('请先勾选需要导出的账号！'); return; }
+            try {
+                const res = await fetch(`${API}/api/accounts/export?type=${type}`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify(ids)
+                });
+                const data = await res.json();
+                copyText(data.data);
+                alert(`已导出 ${ids.length} 个账号到剪贴板！`);
+            } catch(e) { alert('导出失败: ' + e.message); }
+        }
+
+        function copyText(text) {
+            const input = document.createElement('textarea');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+        }
+
+        async function copyCode(code) {
+            try {
+                await navigator.clipboard.writeText(code);
+                // 临时显示复制成功提示
+                const btn = event.target;
+                const origText = btn.textContent;
+                btn.textContent = '已复制';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.textContent = origText;
+                    btn.style.background = '#f59e0b';
+                }, 1500);
+            } catch(e) {
+                // fallback
+                copyText(code);
+                const btn = event.target;
+                const origText = btn.textContent;
+                btn.textContent = '已复制';
+                btn.style.background = '#10b981';
+                setTimeout(() => {
+                    btn.textContent = origText;
+                    btn.style.background = '#f59e0b';
+                }, 1500);
+            }
+        }
+
+        async function copyLatestCode(index, btn) {
+            const acc = accounts[index];
+            const originalText = btn.innerText;
+            btn.innerText = '获取中...';
+            btn.disabled = true;
+            
+            try {
+                // 先检查缓存，如果没有则获取最新一封
+                if (!emailCache[index] || emailCache[index].length === 0) {
+                    const res = await fetch(`${API}/api/fetch_by_token`, {
+                        method: 'POST', headers: {'Content-Type':'application/json'},
+                        body: JSON.stringify({ email: acc.email, client_id: acc.client_id, token: acc.token, limit: 1 })
+                    });
+                    const data = await res.json();
+                    if (data.status === 'ok') {
+                        emailCache[index] = data.emails;
+                        renderList();
+                    } else {
+                        btn.innerText = originalText;
+                        btn.disabled = false;
+                        alert('获取邮件失败: ' + (data.message || '未知错误'));
+                        return;
+                    }
+                }
+                
+                // 获取验证码
+                const emails = emailCache[index];
+                if (emails.length > 0 && emails[0].verification_code) {
+                    const code = emails[0].verification_code;
+                    try {
+                        await navigator.clipboard.writeText(code);
+                        btn.innerText = '已复制';
+                        btn.style.background = '#10b981';
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.style.background = '#f59e0b';
+                            btn.disabled = false;
+                        }, 1500);
+                    } catch(e) {
+                        copyText(code);
+                        btn.innerText = '已复制';
+                        btn.style.background = '#10b981';
+                        setTimeout(() => {
+                            btn.innerText = originalText;
+                            btn.style.background = '#f59e0b';
+                            btn.disabled = false;
+                        }, 1500);
+                    }
+                } else {
+                    btn.innerText = originalText;
+                    btn.disabled = false;
+                    alert('该邮件没有验证码！');
+                }
+            } catch(e) {
+                btn.innerText = originalText;
+                btn.disabled = false;
+                alert('操作失败: ' + e.message);
+            }
+        }
+
+        async function batchCopyVerificationCodes() {
+            // 收集所有已获取邮件中的验证码
+            const codes = [];
+            for (const cacheId in emailCache) {
+                const emails = emailCache[cacheId];
+                if (emails && emails.length > 0) {
+                    for (const em of emails) {
+                        if (em.verification_code) {
+                            codes.push(em.verification_code);
+                        }
+                    }
+                }
+            }
+            
+            if (codes.length === 0) {
+                alert('没有找到验证码！请先获取邮件。');
+                return;
+            }
+            
+            // 去重并复制
+            const uniqueCodes = [...new Set(codes)];
+            try {
+                await navigator.clipboard.writeText(uniqueCodes.join('\n'));
+                alert(`已复制 ${uniqueCodes.length} 个验证码到剪贴板！`);
+            } catch(e) {
+                copyText(uniqueCodes.join('\n'));
+                alert(`已复制 ${uniqueCodes.length} 个验证码到剪贴板！`);
+            }
+        }
+
+        function saveViewMode() {
+            localStorage.setItem('view_mode_token', document.getElementById('viewMode').value);
+            emailCache = {};
+            closeWorkspaceContent();
+            applyViewMode();
+            renderList();
+        }
+
+        function applyViewMode() {
+            let mode = document.getElementById('viewMode').value;
+            const ws = document.getElementById('batchWorkspace');
+            if (mode === 'split' && !isMobileDevice()) { ws.classList.add('is-split'); }
+            else { ws.classList.remove('is-split'); }
+        }
+
+        async function fetchMail(index, limitCount, btn) {
+            const acc = accounts[index];
+            const originalText = btn.innerText;
+            btn.innerText = '获取中...';
+            btn.disabled = true;
+            try {
+                const res = await fetch(`${API}/api/fetch_by_token`, {
+                    method: 'POST', headers: {'Content-Type':'application/json'},
+                    body: JSON.stringify({ email: acc.email, client_id: acc.client_id, token: acc.token, limit: limitCount })
+                });
+                const data = await res.json();
+                btn.innerText = originalText;
+                btn.disabled = false;
+                if (data.status === 'error') { alert(`失败: ${data.message}`); return; }
+                emailCache[index] = data.emails;
+                let mode = document.getElementById('viewMode').value;
+                if (mode === 'modal') { openModal(`账号: ${acc.email}`, index); }
+                else { renderInlineMails(index); }
+            } catch(err) { btn.innerText = originalText; btn.disabled = false; alert('超时'); }
+        }
+
+        function renderInlineMails(cacheId) {
+            const resBox = document.getElementById(`res_${cacheId}`);
+            if (!resBox) return;
+            const emails = emailCache[cacheId];
+            let listHtml = '';
+            if (emails.length === 0) {
+                listHtml = `<div style="padding:15px; text-align:center; color:#9ca3af; font-size:13px; background:#fff; border:1px solid var(--border); border-radius:4px;">📭 无邮件</div>`;
+            } else {
+                listHtml = emails.map((em, idx) => {
+                    let subj = em.subject.replace("[收件箱]", "<span style='color:var(--success); font-weight:bold;'>[收件箱]</span> ").replace("[垃圾箱]", "<span style='color:var(--danger); font-weight:bold;'>[垃圾箱]</span> ");
+                    return `<div class="inline-mail-card" id="inline_item_${cacheId}_${idx}" onclick="showInlineContent('${cacheId}', ${idx})"><div class="inline-mail-subj">${subj}</div><div class="inline-mail-time">${em.date}</div><button class="inline-view-btn">查看正文</button></div>`;
+                }).join('');
+            }
+            resBox.innerHTML = listHtml;
+            resBox.style.display = 'flex';
+            document.getElementById('wsFrame').srcdoc = '';
+            document.getElementById('wsContentHeader').innerHTML = '<div style="padding:40px; text-align:center; color:#9ca3af; font-size:14px;">请在左侧点击查看</div>';
+            document.getElementById('wsTitle').innerText = '正文区';
+        }
+
+        function showInlineContent(cacheId, mailIndex) {
+            const mail = emailCache[cacheId][mailIndex];
+            const accEmail = accounts[cacheId].email;
+            const resBox = document.getElementById(`res_${cacheId}`);
+            resBox.querySelectorAll('.inline-mail-card').forEach(el => { el.style.background = '#fff'; el.style.borderColor = 'var(--border)'; });
+            const clickedItem = document.getElementById(`inline_item_${cacheId}_${mailIndex}`);
+            if (clickedItem) { clickedItem.style.background = '#e0f2fe'; clickedItem.style.borderColor = '#bae6fd'; }
+
+            if (isMobileDevice()) {
+                document.getElementById('emailModal').style.display = 'flex';
+                document.querySelector('.modal-content').classList.add('hide-sidebar');
+                document.getElementById('modalTitle').innerText = `当前账号: ${accEmail}`;
+                document.getElementById('contentHeader').innerHTML = `<div style="font-size:15px; font-weight:bold; margin-bottom:6px;">${mail.subject}</div><div style="font-size:12px; color:var(--text-light);">发件人: ${mail.from}</div>`;
+                document.getElementById('modalFrame').srcdoc = "<base target='_blank'>" + (mail.html_body || mail.text_body || "<p>无正文</p>");
+                return;
+            }
+
+            document.getElementById('wsTitle').innerText = `当前账号: ${accEmail}`;
+            document.getElementById('wsContentHeader').innerHTML = `<div style="font-size:15px; font-weight:bold; margin-bottom:6px;">${mail.subject}</div><div style="font-size:12px; color:var(--text-light);">发件人: ${mail.from}</div>`;
+            document.getElementById('wsFrame').srcdoc = "<base target='_blank'>" + (mail.html_body || mail.text_body || "<p>无正文</p>");
+        }
+
+        function closeWorkspaceContent() {
+            document.getElementById('wsFrame').srcdoc = '';
+            document.getElementById('wsContentHeader').innerHTML = '<div style="padding:40px; text-align:center; color:#9ca3af; font-size:14px;">请在左侧点击查看</div>';
+            document.getElementById('wsTitle').innerText = '正文区';
+        }
+
+        function openModal(titleStr, cacheId) {
+            document.querySelector('.modal-content').classList.remove('hide-sidebar');
+            document.getElementById('modalTitle').innerText = titleStr;
+            const sidebar = document.getElementById('modalSidebar');
+            sidebar.innerHTML = '';
+            const emails = emailCache[cacheId];
+            if (emails.length === 0) {
+                sidebar.innerHTML = '<div style="padding:30px 10px; text-align:center; color:#9ca3af; font-size:14px;">📭<br>无邮件</div>';
+                document.getElementById('contentHeader').innerHTML = '';
+                document.getElementById('modalFrame').srcdoc = '';
+                document.getElementById('emailModal').style.display = 'flex';
+                return;
+            }
+            emails.forEach((em, idx) => {
+                const item = document.createElement('div');
+                item.className = `sidebar-mail-item ${idx === 0 ? 'active' : ''}`;
+                item.onclick = () => loadModalContent(cacheId, idx, item);
+                let subj = em.subject;
+                if (subj.includes("[收件箱]")) subj = subj.replace("[收件箱]", "<span style='color:var(--success);'>[收件箱]</span>");
+                else if (subj.includes("[垃圾箱]")) subj = subj.replace("[垃圾箱]", "<span style='color:var(--danger);'>[垃圾箱]</span>");
+                let codeBtn = '';
+                if (em.verification_code) {
+                    codeBtn = `<span style="color:#f59e0b; font-size:12px; font-weight:bold; cursor:pointer; position:absolute; right:10px; top:50%; transform:translateY(-50%); padding:2px 6px; background:#fef3c7; border:1px solid #fde68a; border-radius:4px;" onclick="event.stopPropagation(); copyCode('${em.verification_code}')" title="点击复制验证码">${em.verification_code}</span>`;
+                }
+                item.style.position = 'relative';
+                item.innerHTML = `<div class="sidebar-subj">${subj}</div><div class="sidebar-time">${em.date}</div>${codeBtn}`;
+                sidebar.appendChild(item);
+            });
+            document.getElementById('emailModal').style.display = 'flex';
+            if (emails.length > 0) loadModalContent(cacheId, 0, sidebar.firstChild);
+        }
+
+        function loadModalContent(cacheId, idx, element) {
+            document.querySelectorAll('.sidebar-mail-item').forEach(el => el.classList.remove('active'));
+            if (element) element.classList.add('active');
+            const mail = emailCache[cacheId][idx];
+            document.getElementById('contentHeader').innerHTML = `<div style="font-size:16px; font-weight:bold; margin-bottom:6px;">${mail.subject}</div><div style="font-size:13px; color:var(--text-light);">发件人: ${mail.from}</div>`;
+            document.getElementById('modalFrame').srcdoc = "<base target='_blank'>" + (mail.html_body || mail.text_body || "<p>无正文</p>");
+        }
+
+        function closeModal() {
+            document.getElementById('emailModal').style.display = 'none';
+            document.getElementById('modalFrame').srcdoc = '';
+            document.getElementById('contentHeader').innerHTML = '';
+            document.querySelector('.modal-content').classList.remove('hide-sidebar');
+        }
+
+        window.onresize = function() {
+            clearTimeout(window.resizeTimer);
+            window.resizeTimer = setTimeout(renderList, 100);
+        };
+
+        // ==================== 别名生成器 ====================
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+            if (tab === 'mail') {
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+                document.getElementById('tab-mail').classList.add('active');
+            } else if (tab === 'alias') {
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+                document.getElementById('tab-alias').classList.add('active');
+                refreshAliasGroupSelect();
+            } else if (tab === 'merge') {
+                document.querySelectorAll('.tab-btn')[2].classList.add('active');
+                document.getElementById('tab-merge').classList.add('active');
+                refreshMergeGroupSelect();
+            }
+        }
+
+        function toggleAliasSrc() {
+            const src = document.querySelector('input[name="aliasSrc"]:checked').value;
+            document.getElementById('aliasGroupSection').style.display = src === 'group' ? '' : 'none';
+            document.getElementById('aliasTextSection').style.display = src === 'text' ? '' : 'none';
+        }
+
+        async function refreshAliasGroupSelect() {
+            try {
+                const res = await fetch(`${API}/api/groups`);
+                const g = await res.json();
+                const sel = document.getElementById('aliasGroupSelect');
+                sel.innerHTML = g.map(x => `<option value="${x.replace(/"/g,'&quot;')}">${x}</option>`).join('');
+                loadAliasGroupAccounts();
+            } catch(e) {}
+        }
+
+        let aliasGroupAccs = [];
+        async function loadAliasGroupAccounts() {
+            const group = document.getElementById('aliasGroupSelect').value;
+            try {
+                const res = await fetch(`${API}/api/accounts?group=${encodeURIComponent(group)}&search=`);
+                aliasGroupAccs = await res.json();
+                renderAliasAccList();
+            } catch(e) {}
+        }
+
+        document.getElementById('aliasGroupSelect')?.addEventListener('change', loadAliasGroupAccounts);
+
+        function renderAliasAccList() {
+            const list = document.getElementById('aliasAccList');
+            if (aliasGroupAccs.length === 0) {
+                list.innerHTML = '<div style="color:#9ca3af; padding:10px; text-align:center;">该分组无账号</div>';
+                return;
+            }
+            list.innerHTML = aliasGroupAccs.map((a, i) => `
+                <label style="display:flex; align-items:center; gap:6px; padding:4px 0; font-size:13px; cursor:pointer;">
+                    <input type="checkbox" data-idx="${i}" onchange="updateAliasSelectedCount()" style="accent-color:var(--primary);">
+                    <span>${a.email}</span>
+                </label>
+            `).join('');
+            updateAliasSelectedCount();
+        }
+
+        function aliasSelectAllGroup() {
+            const cbs = document.querySelectorAll('#aliasAccList input[type="checkbox"]');
+            const allChecked = Array.from(cbs).every(c => c.checked);
+            cbs.forEach(c => c.checked = !allChecked);
+            updateAliasSelectedCount();
+        }
+
+        function updateAliasSelectedCount() {
+            const checked = document.querySelectorAll('#aliasAccList input[type="checkbox"]:checked').length;
+            document.getElementById('aliasSelectedCount').textContent = `已选 ${checked} 个邮箱`;
+        }
+
+        function handleAliasFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => { document.getElementById('aliasTextInput').value = e.target.result; };
+            reader.readAsText(file);
+        }
+
+        async function generateAliases() {
+            const src = document.querySelector('input[name="aliasSrc"]:checked').value;
+            const count = Math.max(1, Math.min(50, parseInt(document.getElementById('aliasCount').value) || 5));
+            const keepFields = document.getElementById('aliasKeepFields').checked;
+            const stagger = document.getElementById('aliasStagger').checked;
+
+            let body = { count, keep_fields: keepFields, stagger };
+
+            if (src === 'group') {
+                const checked = document.querySelectorAll('#aliasAccList input[type="checkbox"]:checked');
+                const ids = Array.from(checked).map(c => aliasGroupAccs[parseInt(c.dataset.idx)].id);
+                if (ids.length === 0) {
+                    aliasUpdateStatus('请先勾选要生成别名的邮箱', 'warn');
+                    return;
+                }
+                body.ids = ids;
+            } else {
+                const text = document.getElementById('aliasTextInput').value.trim();
+                if (!text) {
+                    aliasUpdateStatus('请粘贴或上传邮箱数据', 'warn');
+                    return;
+                }
+                body.text = text;
+            }
+
+            aliasUpdateStatus('生成中...');
+            try {
+                const res = await fetch(`${API}/api/alias/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json();
+                if (data.status === 'error') {
+                    aliasUpdateStatus(data.message, 'warn');
+                    return;
+                }
+                document.getElementById('aliasResult').value = data.data;
+                const skipText = data.skipped > 0 ? `，跳过 ${data.skipped} 行（非微软域）` : '';
+                aliasUpdateStatus(`✅ 已生成 ${data.total} 条别名（${data.valid} 个有效邮箱${skipText}）`, 'ok');
+            } catch(e) {
+                aliasUpdateStatus('请求失败: ' + e.message, 'warn');
+            }
+        }
+
+        function aliasUpdateStatus(msg, level) {
+            const el = document.getElementById('aliasStatus');
+            el.textContent = msg;
+            el.className = 'alias-status' + (level ? ' ' + level : '');
+        }
+
+        async function copyAliasResult() {
+            const text = document.getElementById('aliasResult').value.trim();
+            if (!text) { aliasUpdateStatus('没有可复制的结果', 'warn'); return; }
+            try {
+                await navigator.clipboard.writeText(text);
+                aliasUpdateStatus('✅ 已复制到剪贴板', 'ok');
+            } catch(e) {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                aliasUpdateStatus('✅ 已复制到剪贴板', 'ok');
+            }
+        }
+
+        function downloadAliasResult() {
+            const text = document.getElementById('aliasResult').value.trim();
+            if (!text) { aliasUpdateStatus('没有可下载的结果', 'warn'); return; }
+            const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'result.txt';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAliasAll() {
+            document.getElementById('aliasResult').value = '';
+            document.getElementById('aliasTextInput').value = '';
+            aliasUpdateStatus('已清空，等待新的输入');
+        }
+    </script>
+</body>
+</html>

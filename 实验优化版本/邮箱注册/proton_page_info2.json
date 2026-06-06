@@ -1,0 +1,13 @@
+{
+  "iframes": [
+    {
+      "index": 1,
+      "src": "https://account-api.proton.me/challenge/v4/html?Type=0&Name=email&Lang=zh-CN&Dir=ltr",
+      "x": 164,
+      "y": 266.0833435058594,
+      "w": 544,
+      "h": 80.46875
+    }
+  ],
+  "bodyText": "简体中文\n隐私至上的加密电子邮件服务\n创建 Proton 账户\n使用您已有的邮箱地址\n更多信息：使用 Proton Mail 和 Proton Calendar 还需注册 Proton 邮箱地址\n密码\n立即开始使用 Proton Mail\n已经有账户了？登录\n继续使用即表示您同意我们的 服务条款 和 隐私政策。\n唯一具有以下功能的电子邮件服务：\n内置加密\n受瑞士隐私法保护\n邮箱别名\n高级安全功能\n包含日历、密码管理器、文件储存以及 VPN\n加入 1 亿多选择 Proton 的用户行列，确保安全上网\nProton - Privacy by default\n需要帮助？"
+}
