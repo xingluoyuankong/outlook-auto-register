@@ -6,6 +6,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 RESULTS = ROOT / "runtime_outlook" / "results.jsonl"
+RESULTS2 = ROOT / "自动化定时注册Outlook邮箱" / "runtime_outlook" / "results.jsonl"
 CLOUD = ROOT / "云端注册邮箱"
 THREE = CLOUD / "三凭证"
 FOUR = CLOUD / "四凭证"
@@ -33,10 +34,14 @@ def main(push: bool = False):
     FOUR.mkdir(parents=True, exist_ok=True)
     existing = load_existing_emails()
     added = []
-    if not RESULTS.exists():
+    all_results = []
+    for rf in [RESULTS, RESULTS2]:
+        if rf.exists():
+            all_results.extend(rf.read_text(encoding="utf-8").splitlines())
+    if not all_results:
         print("no results file")
         return 0
-    for line in RESULTS.read_text(encoding="utf-8").splitlines():
+    for line in all_results:
         if not line.strip():
             continue
         try:
@@ -72,13 +77,22 @@ def main(push: bool = False):
         print(e)
     if push:
         subprocess.run(["git", "-C", str(CLOUD), "add", "."], check=True)
-        status = subprocess.check_output(["git", "-C", str(CLOUD), "status", "--porcelain"], text=True)
-        if status.strip():
+        staged = subprocess.check_output(["git", "-C", str(CLOUD), "diff", "--cached", "--name-only"], text=True)
+        if staged.strip():
             msg = "sync registered outlook credentials " + dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             subprocess.run(["git", "-C", str(CLOUD), "commit", "-m", msg], check=True)
-            subprocess.run(["git", "-C", str(CLOUD), "push"], check=True)
+            # pull --rebase before push to avoid rejection
+            subprocess.run(["git", "-C", str(CLOUD), "stash"], check=False)
+            subprocess.run(["git", "-C", str(CLOUD), "pull", "--rebase", "-X", "ours"], check=False)
+            subprocess.run(["git", "-C", str(CLOUD), "stash", "pop"], check=False)
+            r = subprocess.run(["git", "-C", str(CLOUD), "push"], check=False)
+            if r.returncode != 0:
+                subprocess.run(["git", "-C", str(CLOUD), "stash"], check=False)
+                subprocess.run(["git", "-C", str(CLOUD), "pull", "--rebase", "-X", "ours"], check=False)
+                subprocess.run(["git", "-C", str(CLOUD), "stash", "pop"], check=False)
+                subprocess.run(["git", "-C", str(CLOUD), "push"], check=False)
         else:
-            print("nothing to commit")
+            print("nothing to commit locally")
     return 0
 
 if __name__ == "__main__":

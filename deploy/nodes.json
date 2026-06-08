@@ -1,0 +1,57 @@
+{
+  "nodes": [
+    {
+      "id": "xzxyuan",
+      "handle": "xzxyuan",
+      "label": "Zo-1 · xzxyuan",
+      "role": "primary",
+      "ssh_host": "127.0.0.1",
+      "ssh_port": 0,
+      "ssh_key": "",
+      "project_dir": "/home/workspace/Email-Register",
+      "dashboard_local": "http://127.0.0.1:8765/api/status",
+      "ngrok_url": "https://scientist-primary-pregnancy.ngrok-free.dev/api/status"
+    },
+    {
+      "id": "zo2",
+      "handle": "user7fuda2",
+      "label": "Zo-2 · user7fuda2",
+      "role": "worker",
+      "ssh_host": "ts10.zocomputer.io",
+      "ssh_port": 10005,
+      "ssh_key": "/home/workspace/zo-mesh/config/keys/node2.pem",
+      "project_dir": "/home/workspace/Email-Register",
+      "legacy_dir": "/home/workspace/outlook-auto-register",
+      "dashboard_local": "http://127.0.0.1:8765/api/status"
+    },
+    {
+      "id": "zo3",
+      "handle": "reedemma",
+      "label": "Zo-3 · reedemma",
+      "role": "worker",
+      "ssh_host": "ts13.zocomputer.io",
+      "ssh_port": 10037,
+      "ssh_key": "/home/workspace/zo-mesh/config/keys/node3.pem",
+      "project_dir": "/home/workspace/Email-Register",
+      "dashboard_local": "http://127.0.0.1:8765/api/status"
+    },
+    {
+      "id": "gcore",
+      "label": "Gcore VPS",
+      "role": "worker",
+      "enabled": true,
+      "ssh_host": "31.184.244.145",
+      "ssh_port": 22,
+      "ssh_user": "ubuntu",
+      "ssh_key": "/home/workspace/zo-mesh/config/keys/gcore.pem",
+      "project_dir": "/home/ubuntu/Email-Register",
+      "dashboard_local": "http://127.0.0.1:8765/api/status",
+      "note": "VLESS+Xray+X-UI; outlook 部署目录 /home/ubuntu/Email-Register"
+    }
+  ],
+  "ngrok_hub": {
+    "primary_node": "xzxyuan",
+    "public_url": "https://scientist-primary-pregnancy.ngrok-free.dev",
+    "policy": "仅主节点跑 ngrok；其余节点只本机 8765，状态经 SSH 汇总到主域名"
+  }
+}

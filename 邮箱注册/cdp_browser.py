@@ -1,4 +1,4 @@
-﻿"""
+"""
 CDP (Chrome DevTools Protocol) Browser Module
 
 Launches a clean Chrome browser without automation flags and connects via CDP.
@@ -16,6 +16,7 @@ import tempfile
 import threading
 import time
 import socket
+import sys
 import urllib.request
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -29,6 +30,27 @@ DEFAULT_CHROME_PATHS = [
     r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
     os.path.expanduser(r"~\AppData\Local\Google\Chrome\Application\chrome.exe"),
 ]
+
+
+def _ensure_display_env():
+    """确保 DISPLAY 环境变量已设置（用于 Xvfb 虚拟显示器）"""
+    if not os.environ.get('DISPLAY'):
+        # 检测常见的 Xvfb 显示器
+        for disp in [':98', ':99', ':0']:
+            try:
+                result = subprocess.run(
+                    ['xdpyinfo'],
+                    env={**os.environ, 'DISPLAY': disp},
+                    capture_output=True,
+                    timeout=2
+                )
+                if result.returncode == 0:
+                    os.environ['DISPLAY'] = disp
+                    logger.info(f"[CDP] Auto-detected DISPLAY={disp}")
+                    return
+            except:
+                pass
+        logger.warning("[CDP] No X display detected, Chrome may fail to launch")
 
 # 多浏览器路径配置（均为 Chromium 内核，支持 CDP）
 BROWSER_PATHS = {
@@ -346,6 +368,22 @@ def _find_browser(browser_type: str = "chrome") -> str:
         found = shutil.which(name)
         if found:
             return found
+    if sys.platform != "win32":
+        linux_candidates = [
+            "/usr/bin/google-chrome-stable",
+            "/usr/bin/google-chrome",
+            "/usr/bin/chromium",
+            "/usr/bin/chromium-browser",
+            "/snap/bin/chromium",
+        ]
+        if browser_type in ("chrome", "chromium"):
+            for p in linux_candidates:
+                if os.path.isfile(p) and os.access(p, os.X_OK):
+                    return p
+            for name in ("google-chrome-stable", "google-chrome", "chromium", "chromium-browser"):
+                found = shutil.which(name)
+                if found:
+                    return found
     raise FileNotFoundError(
         f"浏览器 '{browser_type}' 未找到。请确认已安装该浏览器，或在页面刷新后选择其他已安装的浏览器。"
     )
@@ -444,6 +482,21 @@ class CDPBrowser:
 
     def launch(self) -> "CDPBrowser":
         """Launch browser and connect via CDP."""
+        # 确保 DISPLAY 环境变量已设置（Xvfb 虚拟显示器）
+        if 'DISPLAY' not in os.environ or not os.environ['DISPLAY']:
+            # 尝试检测 Xvfb 显示器
+            for _disp in [':98', ':99', ':0']:
+                try:
+                    _r = subprocess.run(['xdpyinfo'], env={**os.environ, 'DISPLAY': _disp}, capture_output=True, timeout=2)
+                    if _r.returncode == 0:
+                        os.environ['DISPLAY'] = _disp
+                        logger.info(f"[CDP] Auto-detected DISPLAY={_disp}")
+                        break
+                except Exception:
+                    pass
+            else:
+                logger.warning("[CDP] No X display detected, Chrome may fail to launch")
+        
         chrome_path = self.config.chrome_path or _find_browser(self.config.browser_type)
         logger.info("[CDP] Browser type requested: '%s', resolved path: %s", self.config.browser_type, chrome_path)
         self._port = self.config.debug_port or _find_free_port()
@@ -546,10 +599,16 @@ class CDPBrowser:
                 err_dir.mkdir(parents=True, exist_ok=True)
                 chrome_err_path = err_dir / f"chrome_{self._port}_{_launch_attempt + 1}.err"
                 chrome_err_file = open(chrome_err_path, "w", encoding="utf-8")
+                # 确保环境变量包含 DISPLAY（从父进程继承或显式设置）
+                launch_env = os.environ.copy()
+                if 'DISPLAY' not in launch_env:
+                    launch_env['DISPLAY'] = ':98'  # 默认 Xvfb 显示
+                
                 self._process = subprocess.Popen(
                     args,
                     stdout=subprocess.DEVNULL,
                     stderr=chrome_err_file,
+                    env=launch_env,
                 )
                 # 等待一小段时间让Chrome进程稳定，再启动下一个
                 time.sleep(2)
@@ -1461,4 +1520,3 @@ class CDPBrowser:
     @property
     def title(self) -> str:
         return self.get_title()
-

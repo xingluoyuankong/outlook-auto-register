@@ -270,8 +270,12 @@ class SubscriptionProxyManager:
 
     def start(self) -> tuple[bool, str]:
         """启动 mihomo 子进程"""
-        if self.is_running:
+        if self.is_running and _check_port("127.0.0.1", MIXED_PORT):
             return True, f"mihomo 已在运行 (端口 {MIXED_PORT})"
+        if self.is_running:
+            logger.warning("[mihomo] 状态异常(API/残留)，重启")
+            _kill_all_mihomo()
+            time.sleep(0.5)
 
         if not self._subscriptions:
             return False, "没有订阅链接，请先添加订阅"
@@ -350,7 +354,7 @@ class SubscriptionProxyManager:
     @property
     def is_running(self) -> bool:
         """检查 mihomo 是否在运行"""
-        return _check_port("127.0.0.1", MIXED_PORT) or _check_port("127.0.0.1", API_PORT)
+        return _check_port("127.0.0.1", MIXED_PORT)
 
     @property
     def proxy_url(self) -> Optional[str]:
