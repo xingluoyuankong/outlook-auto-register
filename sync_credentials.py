@@ -167,6 +167,12 @@ def main(push: bool = False):
         for e in upgraded:
             print(f"  {e}")
     if push:
+        # Initialize git repo if not exists
+        git_dir = CLOUD / ".git"
+        if not git_dir.exists():
+            subprocess.run(["git", "-C", str(CLOUD), "init"], check=False)
+            subprocess.run(["git", "-C", str(CLOUD), "remote", "add", "origin",
+                           "https://github.com/xingluoyuankong/cloud-register-email.git"], check=False)
         subprocess.run(["git", "-C", str(CLOUD), "add", "."], check=True)
         staged = subprocess.check_output(["git", "-C", str(CLOUD), "diff", "--cached", "--name-only"], text=True)
         if staged.strip():
