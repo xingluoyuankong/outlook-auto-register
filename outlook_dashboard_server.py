@@ -187,6 +187,24 @@ th{color:var(--muted);font-weight:500}
 
 <div class="grid">
   <div class="card">
+    <h2>📊 注册统计</h2>
+    <div style="display:flex;justify-content:space-around;text-align:center;padding:.4rem 0">
+      <div>
+        <div style="font-size:2rem;font-weight:700;color:var(--ok)">{{total_registrations}}</div>
+        <div style="font-size:.75rem;color:var(--muted)">总注册数</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;font-weight:700;color:var(--accent)">{{today_registrations}}</div>
+        <div style="font-size:.75rem;color:var(--muted)">今日注册</div>
+      </div>
+      <div>
+        <div style="font-size:2rem;font-weight:700;color:#c4b5fd">{{total_runtime}}</div>
+        <div style="font-size:.75rem;color:var(--muted)">运行总时长</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
     <h2>运行状态</h2>
     <p><span class="pill {{phase_class}}">{{phase_label}}</span></p>
     <dl>
@@ -361,6 +379,9 @@ def _render_page(snap: dict) -> str:
         .replace("{{results_count}}", str(len(recent)))
         .replace("{{results_table}}", _render_results(recent))
         .replace("{{log_tail}}", log_tail or "(暂无日志)")
+        .replace("{{total_registrations}}", str(snap.get("total_registrations", 0)))
+        .replace("{{today_registrations}}", str(snap.get("today_registrations", 0)))
+        .replace("{{total_runtime}}", str(snap.get("total_runtime", "—")))
         .replace("{{disabled_proxy}}", "")
     )
 

@@ -11,6 +11,7 @@ STATUS_PATH = ROOT / "runtime_outlook" / "daemon_status.json"
 SCHEDULE_PATH = ROOT / "runtime_outlook" / "daemon_schedule.json"
 LOG_FILE = ROOT / "runtime_outlook" / "logs" / "outlook_daemon.log"
 RESULTS_FILE = ROOT / "runtime_outlook" / "results.jsonl"
+DEPLOY_TS = 1780774138  # 2026-06-06T19:28:58 UTC, when the daemon service was first deployed
 
 REGISTER_INTERVAL_SECONDS = 4 * 60 * 60
 REGISTER_COUNT = 5
@@ -132,6 +133,42 @@ def resolve_next_register_on_startup(now: float | None = None) -> tuple[float, b
     return now, True, "尚无完成记录，启动后执行首批注册"
 
 
+def _registration_stats() -> dict[str, Any]:
+    total_registrations = 0
+    today_registrations = 0
+    today_str = time.strftime("%Y-%m-%d")
+    if RESULTS_FILE.is_file():
+        for line in RESULTS_FILE.read_text(encoding="utf-8", errors="replace").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not record.get("success"):
+                continue
+            total_registrations += 1
+            ts_str = (record.get("ts") or "")[:10]
+            if ts_str == today_str:
+                today_registrations += 1
+    elapsed = time.time() - DEPLOY_TS
+    days = int(elapsed // 86400)
+    hours = int((elapsed % 86400) // 3600)
+    mins = int((elapsed % 3600) // 60)
+    if days > 0:
+        runtime_str = f"{days}天{hours}小时{mins}分"
+    elif hours > 0:
+        runtime_str = f"{hours}小时{mins}分"
+    else:
+        runtime_str = f"{mins}分钟"
+    return {
+        "total_registrations": total_registrations,
+        "today_registrations": today_registrations,
+        "total_runtime": runtime_str,
+    }
+
+
 def build_snapshot(extra: dict[str, Any] | None = None) -> dict[str, Any]:
     st = load_status()
     sched = load_schedule()
@@ -158,4 +195,5 @@ def build_snapshot(extra: dict[str, Any] | None = None) -> dict[str, Any]:
     }
     if extra:
         snap.update(extra)
+    snap.update(_registration_stats())
     return snap

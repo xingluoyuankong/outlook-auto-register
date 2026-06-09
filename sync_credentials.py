@@ -173,24 +173,92 @@ def main(push: bool = False):
         if not git_dir.exists():
             subprocess.run(["git", "-C", str(CLOUD), "init"], check=False)
             subprocess.run(["git", "-C", str(CLOUD), "remote", "add", "origin", CLOUD_REMOTE], check=False)
-        subprocess.run(["git", "-C", str(CLOUD), "add", "."], check=True)
-        staged = subprocess.check_output(["git", "-C", str(CLOUD), "diff", "--cached", "--name-only"], text=True)
-        if staged.strip():
+
+        # Step 1: Fetch and merge remote changes (only credential-related)
+        subprocess.run(["git", "-C", str(CLOUD), "fetch", "origin"], check=False)
+        # Check if behind remote
+        behind = subprocess.check_output(
+            ["git", "-C", str(CLOUD), "rev-list", "--count", "HEAD..origin/main"],
+            text=True, stderr=subprocess.DEVNULL
+        ).strip()
+        if int(behind or 0) > 0:
+            r = subprocess.run(["git", "-C", str(CLOUD), "merge", "origin/main", "--no-edit", "-X", "ours"], check=False)
+            if r.returncode != 0:
+                subprocess.run(["git", "-C", str(CLOUD), "merge", "--abort"], check=False)
+                # Fallback: rebase
+                subprocess.run(["git", "-C", str(CLOUD), "rebase", "origin/main"], check=False)
+
+        # Step 2: Only stage specific new/modified credential files
+        staged_files = []
+        # Stage all_success.jsonl if modified
+        all_jsonl = CLOUD / "all_success.jsonl"
+        if all_jsonl.exists():
+            subprocess.run(["git", "-C", str(CLOUD), "add", str(all_jsonl)], check=False)
+            staged_files.append("all_success.jsonl")
+        # Stage new/modified credential txt files (三凭证/ and 四凭证/)
+        for subdir in ["三凭证", "四凭证"]:
+            cred_dir = CLOUD / subdir
+            if cred_dir.exists():
+                for txt in cred_dir.rglob("*.txt"):
+                    subprocess.run(["git", "-C", str(CLOUD), "add", str(txt)], check=False)
+                    staged_files.append(str(txt.relative_to(CLOUD)))
+        # Stage README.md if changed
+        readme = CLOUD / "README.md"
+        if readme.exists():
+            subprocess.run(["git", "-C", str(CLOUD), "add", str(readme)], check=False)
+
+        # Check what's actually staged
+        diff_out = subprocess.check_output(
+            ["git", "-C", str(CLOUD), "diff", "--cached", "--name-only"],
+            text=True, stderr=subprocess.DEVNULL
+        ).strip()
+        if diff_out:
             msg = "sync registered outlook credentials " + dt.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             subprocess.run(["git", "-C", str(CLOUD), "commit", "-m", msg], check=True)
-            # pull --rebase before push to avoid rejection
-            subprocess.run(["git", "-C", str(CLOUD), "stash"], check=False)
-            subprocess.run(["git", "-C", str(CLOUD), "pull", "--rebase", "-X", "ours"], check=False)
-            subprocess.run(["git", "-C", str(CLOUD), "stash", "pop"], check=False)
+            # Push with retry
             r = subprocess.run(["git", "-C", str(CLOUD), "push"], check=False)
             if r.returncode != 0:
-                subprocess.run(["git", "-C", str(CLOUD), "stash"], check=False)
-                subprocess.run(["git", "-C", str(CLOUD), "pull", "--rebase", "-X", "ours"], check=False)
-                subprocess.run(["git", "-C", str(CLOUD), "stash", "pop"], check=False)
-                subprocess.run(["git", "-C", str(CLOUD), "push"], check=False)
+                # Pull --rebase and retry
+                subprocess.run(["git", "-C", str(CLOUD), "fetch", "origin"], check=False)
+                subprocess.run(["git", "-C", str(CLOUD), "rebase", "origin/main"], check=False)
+                r = subprocess.run(["git", "-C", str(CLOUD), "push"], check=False)
+            if r.returncode == 0:
+                print(f"push_ok staged={len(diff_out.splitlines())} files")
+                # Step 3: After successful push, move old local credential files to archive
+                _archive_old_local_credentials()
+            else:
+                print("push_failed")
         else:
             print("nothing to commit locally")
+
     return 0
+
+
+def _archive_old_local_credentials() -> None:
+    """Move old local credential files from 自动化定时注册Outlook邮箱/三凭证|四凭证 to 已推送凭证/."""
+    local_root = ROOT / "自动化定时注册Outlook邮箱"
+    archive_root = local_root / "已推送凭证"
+    moved = 0
+    for subdir in ["三凭证", "四凭证"]:
+        src_dir = local_root / subdir
+        if not src_dir.exists():
+            continue
+        for day_dir in src_dir.iterdir():
+            if not day_dir.is_dir():
+                continue
+            for txt_file in day_dir.glob("*.txt"):
+                dest_day = archive_root / subdir / day_dir.name
+                dest_day.mkdir(parents=True, exist_ok=True)
+                dest = dest_day / txt_file.name
+                if not dest.exists():
+                    txt_file.rename(dest)
+                    moved += 1
+        # Remove empty day dirs after moving
+        for day_dir in list(src_dir.iterdir()):
+            if day_dir.is_dir() and not any(day_dir.iterdir()):
+                day_dir.rmdir()
+    if moved:
+        print(f"archived {moved} old local credential files to 已推送凭证/")
 
 if __name__ == "__main__":
     import argparse
