@@ -152,6 +152,34 @@ def stop_registration_browser():
     """外部调用：关闭所有注册流程使用的浏览器，不影响其他功能"""
     _kill_all_browsers()
 
+def kill_orphan_chrome_processes():
+    """清理孤儿 Chrome 进程（outlook 注册残留），不影响 agent-browser 等其他浏览器"""
+    import subprocess as _sp
+    try:
+        # 找出所有带 --user-data-dir=/tmp 的 chrome 进程（注册用的临时目录）
+        r = _sp.run(
+            ["pgrep", "-a", "chrome"],
+            capture_output=True, text=True, timeout=5
+        )
+        killed = 0
+        for line in r.stdout.splitlines():
+            # 只杀注册用的临时 user-data-dir，不碰 agent-browser / zo 内置浏览器
+            if "--user-data-dir=" in line and "/tmp" in line and "agent-browser" not in line:
+                parts = line.split()
+                if parts and parts[0].isdigit():
+                    pid = int(parts[0])
+                    try:
+                        os.kill(pid, 9)
+                        killed += 1
+                    except (ProcessLookupError, PermissionError):
+                        pass
+        if killed:
+            logger.info("[CLEANUP] Killed %d orphan Chrome processes", killed)
+        return killed
+    except Exception as e:
+        logger.warning("[CLEANUP] Failed to kill orphan chrome: %s", e)
+        return 0
+
 def _check_pause_or_stop(step=""):
     """检查暂停/停止。暂停时阻塞直到恢复，返回后调用者应重新检测页面状态。
     并发安全: 优先读取线程级状态，回退到全局状态。

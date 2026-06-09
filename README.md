@@ -346,17 +346,38 @@ If you find this project helpful and would like to show your support, here are a
 
 Your support is greatly appreciated and helps to ensure the continued improvement and availability of this project. 
 
+## 浏览器实例管理与注意事项
+
+### 幽灵浏览器清理
+
+注册流程使用的 Chrome/Chromium 浏览器实例会在注册完成、RT 提取完成后自动清理。但以下情况可能导致幽灵浏览器残留：
+
+- Chrome 崩溃导致 `_process` 引用丢失，主进程被杀但子进程存活
+- 注册流程异常中断（OOM、超时、外部 kill）
+- Playwright 启动的浏览器在异常退出时未被回收
+
+### 自动清理机制
+
+系统在以下节点自动清理孤儿浏览器：
+
+1. **每次注册完成后** — `run_once()` 结束后调用 `kill_orphan_chrome_processes()`
+2. **每批次完成后** — `run_batch()` 循环结束后调用
+3. **守护程序注册批次后** — `outlook_daemon.py` 在注册和 RT 提取后分别清理
+4. **RT 提取完成后** — `post_register_fetch_rt.py` 和 `batch_rt.py` 清理 Playwright 实例
+5. **CDPBrowser.close()** — 使用 `os.killpg()` 杀整个进程组，`pkill` 兜底
+
+### 手动清理
+
+```bash
+# 清理所有 Outlook 注册相关的幽灵 Chrome 进程（不影响 agent-browser）
+python3 -c "from 邮箱注册.cdp_outlook import kill_orphan_chrome_processes; kill_orphan_chrome_processes()"
+```
+
+### ⚠️ 注意事项
+
+- **不要用 `pkill -9 chrome`** — 这会杀掉所有 Chrome 进程，包括 Zo 的 agent-browser
+- 清理函数只匹配 `outlook.*user-data|cdp_outl|cdp_reg|outlook_reg` 模式，不会误杀其他浏览器
+- Modal 沙盒内存有限（通常 4GB），如果幽灵浏览器堆积会导致 OOM 循环
+- 建议每台节点的守护程序配置中加入定期清理（已内置在 daemon 流程中）
+
 ## 自动化运维部署
-
-邮箱注册 is provided solely for educational and informational purposes. It is explicitly stated that the intention behind 邮箱注册 is not to promote or engage in any illegal activities, including hacking or any other unauthorized actions.
-
-While using 邮箱注册, it is crucial to understand and abide by the terms of service of each email provider you choose to utilize. Creating accounts that violate these terms of service may lead to the suspension or termination of your account by the respective email provider.
-
-To ensure responsible and lawful usage of 邮箱注册, please consider the following additional points:
-
-1. Unethical Use: Under no circumstances should 邮箱注册 be employed for malicious or unethical activities, including but not limited to spamming, phishing, or identity theft. Such actions are strictly prohibited.
-2. Legal Compliance: You are solely responsible for ensuring that your use of 邮箱注册 is in full compliance with all applicable laws and regulations within your jurisdiction. Any misuse that violates the law is strictly discouraged.
-
-By choosing to use 邮箱注册, you acknowledge and accept the aforementioned disclaimers and agree to utilize this service only for educational and lawful purposes. Any misuse or illegal activities conducted using 邮箱注册 are entirely the responsibility of the user, and the developers and providers of 邮箱注册 bear no liability for such actions.
-
-

@@ -609,6 +609,7 @@ class CDPBrowser:
                     stdout=subprocess.DEVNULL,
                     stderr=chrome_err_file,
                     env=launch_env,
+                    start_new_session=True,  # 独立进程组，方便整棵树清理
                 )
                 # 等待一小段时间让Chrome进程稳定，再启动下一个
                 time.sleep(2)
@@ -1475,23 +1476,45 @@ class CDPBrowser:
         return base64.b64encode(data).decode()
 
     def close(self):
-        """Close the browser."""
+        """Close the browser and kill entire process tree."""
         self._connected = False
         try:
             if self._ws:
                 self._ws.close()
         except Exception:
             pass
-        try:
-            if self._process:
-                self._process.terminate()
-                self._process.wait(timeout=5)
-        except Exception:
+        # Kill entire process group (Chrome spawns child processes: renderer, GPU, etc.)
+        if self._process:
+            pgid = None
             try:
-                if self._process:
-                    self._process.kill()
+                pgid = os.getpgid(self._process.pid)
             except Exception:
                 pass
+            try:
+                self._process.terminate()
+                self._process.wait(timeout=3)
+            except Exception:
+                try:
+                    if self._process:
+                        self._process.kill()
+                except Exception:
+                    pass
+            # Kill any remaining children in the process group
+            if pgid and pgid > 1:
+                try:
+                    os.killpg(pgid, 9)  # SIGKILL entire group
+                    logger.info("[CDP] Killed process group pgid=%d", pgid)
+                except (ProcessLookupError, PermissionError):
+                    pass
+            # Double-check: kill any chrome processes with our user-data-dir
+            if self._temp_dir:
+                try:
+                    subprocess.run(
+                        ["pkill", "-9", "-f", str(self._temp_dir)],
+                        capture_output=True, timeout=5
+                    )
+                except Exception:
+                    pass
         # Clean up relay server
         if hasattr(self, '_relay_server') and self._relay_server:
             try:
@@ -1501,7 +1524,7 @@ class CDPBrowser:
         if self._temp_dir:
             try:
                 import shutil
-                time.sleep(0.5)  # 等待 Chrome 完全退出后再删除
+                time.sleep(0.3)
                 shutil.rmtree(self._temp_dir, ignore_errors=True)
             except Exception:
                 pass

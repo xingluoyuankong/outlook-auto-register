@@ -119,6 +119,13 @@ def register_batch() -> None:
     ]
     code = run(cmd, timeout=REGISTER_INTERVAL_SECONDS - 300, env=env)
     log.info("register batch exit=%s", code)
+    # ── 注册批次后强制清理孤儿浏览器 ──
+    try:
+        sys.path.insert(0, str(ROOT / "邮箱注册"))
+        from cdp_outlook import kill_orphan_chrome_processes
+        kill_orphan_chrome_processes()
+    except Exception as e:
+        log.warning("批次后浏览器清理失败: %s", e)
     ended = time.time()
     save_schedule({
         "last_batch_finished_at": ended,
@@ -130,6 +137,12 @@ def register_batch() -> None:
         post_register_fetch_rt()
     except Exception as exc:
         log.warning("post_register_fetch_rt failed: %s", exc)
+    # ── RT 提取后再次清理孤儿浏览器 ──
+    try:
+        from cdp_outlook import kill_orphan_chrome_processes
+        kill_orphan_chrome_processes()
+    except Exception as e:
+        log.warning("RT 提取后浏览器清理失败: %s", e)
     sync_credentials(push=True)
 
 

@@ -31,7 +31,7 @@ PKG = ROOT / "邮箱注册"
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(PKG))
 
-from 邮箱注册.cdp_outlook import register_outlook_account
+from 邮箱注册.cdp_outlook import register_outlook_account, kill_orphan_chrome_processes
 from 邮箱注册.proxy_utils import parse_proxies, parse_proxy
 from 邮箱注册.subscription_proxy import get_manager
 
@@ -208,6 +208,11 @@ def run_once(proxy: str, browser: str = "chrome", extract_rt: bool = True, slot_
         "screenshot_path": result.screenshot_path,
     }
     write_result(record)
+    # ── 每次注册后清理孤儿 Chrome 进程 ──
+    try:
+        kill_orphan_chrome_processes()
+    except Exception as e:
+        log.warning("孤儿清理失败: %s", e)
     return record
 
 
@@ -240,6 +245,11 @@ def run_batch(count: int, browser: str, extract_rt: bool, shuffle: bool, max_pro
             break
         if last_error and not recorded:
             results.append({"success": False, "error": last_error, "ts": dt.datetime.now().isoformat()})
+    # ── 批次结束后最终清理 ──
+    try:
+        kill_orphan_chrome_processes()
+    except Exception as e:
+        log.warning("批次结束清理失败: %s", e)
     return results
 
 

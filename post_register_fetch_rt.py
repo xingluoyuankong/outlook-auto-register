@@ -153,6 +153,7 @@ def main():
     result = fetch_rt_batch(emails, args.timeout, args.start_port, args.display)
     print(f"[POST-RT] 完成: {result['success']}/{result['total']} 成功, "
           f"{result.get('timeout', 0)} 超时, {result.get('fail', 0)} 失败")
+    # 清理 RT 提取过程中残留的浏览器孤儿进程
     return 0 if result["success"] > 0 else 1
 
 
